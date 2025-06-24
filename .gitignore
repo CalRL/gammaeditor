@@ -130,3 +130,5 @@ dist
 .pnp.*
 .vscode/
 .idea/
+/public/sprites
+/scraper/images
