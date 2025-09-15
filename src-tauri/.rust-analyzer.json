@@ -1,0 +1,10 @@
+{
+  "procMacro": {
+    "enable": true,
+    "ignored": {
+      "*": ["*"],
+      "gvas": [],
+      "gammaeditor": []
+    }
+  }
+}

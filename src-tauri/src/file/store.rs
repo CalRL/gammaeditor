@@ -1,6 +1,11 @@
+use std::any::Any;
 use std::collections::HashMap;
+use std::fs::File;
 use std::hash::Hash;
 use std::io::{Read};
+use std::os::raw::c_void;
+use std::panic::panic_any;
+use std::ptr::null;
 use std::sync::{Arc, RwLock};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -9,6 +14,7 @@ use once_cell::sync::Lazy;
 pub struct Store {
     pub save_file: Arc<RwLock<SaveFile>>,
 }
+
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SaveFile {
@@ -36,6 +42,19 @@ pub struct KeyStore {
 
 impl KeyStore {
 
+    pub fn get_data() {
+        let store: Store = Store::from_global().unwrap();
+        let data = store.get_properties();
+    }
+
+    pub fn get_data_mut() {
+        let mut store: Store = Store::from_global().unwrap();
+        let data = store.get_properties_mut();
+    }
+
+    pub fn get_party() {
+
+    }
 }
 
 #[derive(Debug, Default, Clone)]

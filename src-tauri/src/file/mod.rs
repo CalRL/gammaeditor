@@ -8,8 +8,6 @@ use crate::file::save::{set_loaded_file, LoadedFile};
 use serde_json::Value;
 use std::path::Path;
 use std::process::Command;
-use gvas::game_version::GameVersion;
-use gvas::GvasFile;
 use tauri::{command, AppHandle, Emitter, Window};
 use tauri_plugin_dialog::DialogExt;
 use crate::file::cache::cache;

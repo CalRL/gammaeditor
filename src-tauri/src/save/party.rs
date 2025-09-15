@@ -60,7 +60,7 @@ impl Party {
         let p_key = "PartyPokemonInfo";
 
 
-        let store = Store::from_global().map_err(|e| e.to_string()).unwrap();
+        let store: Store = Store::from_global().map_err(|e| e.to_string()).unwrap();
         let properties = store.get_properties().unwrap();
 
         let party = properties
