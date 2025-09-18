@@ -41,6 +41,6 @@ impl PartyPokemonInfo {
 
     pub fn get_name(s: &SharedState, index: usize) -> Option<String> {
         let info = PartyPokemonInfo::get_info_by_index(s, index);
-        info?.value.get_custom_struct().inde
+        // info?.value.get_custom_struct().index
     }
 }
