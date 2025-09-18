@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io;
 use std::io::Write;
 use std::path::PathBuf;
-use std::sync::{Arc, LockResult, RwLock, RwLockReadGuard};
+use std::sync::{Arc, LockResult, MappedRwLockReadGuard, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use chrono::format::Item::Error;
 use gvas::game_version::GameVersion;
 use gvas::GvasFile;
@@ -115,16 +115,6 @@ impl AppState {
 
     pub fn get_gvas(&self) -> Option<&SharedGvas> {
         self.gvas_file.as_ref()
-    }
-
-    /// Returns a RwLockReadGuard
-    pub fn get_properties<'a>(&self) -> Option<RwLockReadGuard<'_, GvasFile>> {
-        self.gvas_file.as_ref()?.read().ok()
-    }
-
-    /// Returns a RwLockWriteGuard
-    pub fn get_properties_mut<'a>(&self) -> Option<std::sync::RwLockWriteGuard<'_, GvasFile>> {
-        self.gvas_file.as_ref()?.write().ok()
     }
 
     pub fn with_property_mut<F, R>(&self, key: &str, f: F) -> Option<R>
