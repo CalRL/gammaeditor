@@ -16,8 +16,6 @@ macro_rules! tauri_commands {
             //backup commands
             crate::save::backup::create_backup,
 
-            crate::save::party::get_party,
-
             // boxes commands
             crate::save::boxes::get_box,
             crate::save::boxes::get_enriched_box,
@@ -39,14 +37,13 @@ macro_rules! tauri_commands {
 
             crate::save::boxes::get_class_by_index,
             crate::save::boxes::get_classes_by_box,
-            crate::save::boxes::get_mon_grid,
-            crate::save::boxes::get_shiny_by_index,
-            crate::save::boxes::get_enriched_by_index,
 
             crate::save::boxes::grid::get_simple_mon_grid,
 
             // party
-            crate::save::party::get_enriched_party,
+            crate::save::party_legacy::get_enriched_party,
+            crate::save::party_legacy::get_pokemon_info,
+            crate::save::party_legacy::get_party,
 
             crate::save::box_edit::set_shiny_by_index,
 

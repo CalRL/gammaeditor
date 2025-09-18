@@ -1,11 +1,14 @@
+use gvas::properties::array_property::ArrayProperty;
+use gvas::properties::Property;
 use serde::Serialize;
 use serde_json::Value;
 use crate::pkmn::{types, EnrichedMon, Stats, Types};
 use crate::save::player::get_properties;
 use tauri::command;
 use crate::file::store::Store;
+use crate::logger;
 use crate::save::enums::SaveKeys;
-use crate::save::party;
+use crate::save::{party, AppState, SharedState};
 use crate::save::utils::{get_first_starts_with, get_name, get_starts_with};
 
 pub struct Party {
@@ -53,7 +56,29 @@ impl Party {
             .expect("bools not array");
 
         bools.iter().map(|v| v.as_bool().unwrap_or(false)).collect()
+    }
 
+    pub fn get_pokemon_info(state: tauri::State<SharedState>) -> Option<&Property> {
+        println!("Getting guard for pokemon info");
+        let guard = state.read().ok()?;
+        if let Some(_) = guard.with_property(SaveKeys::PartyPokemonInfo.as_str(), |prop| {
+            if let Property::ArrayProperty(inner) = prop {
+                match inner {
+                    ArrayProperty::Structs { structs,  .. } => {
+                        logger::info(format!("Got Structs with {} entries", structs.len()).as_str());
+                        logger::info(format!("Struct = {:?}", structs[0]).as_str());
+                    }
+                    _ => {
+                        println!("ArrayProperty but not Structs");
+                    }
+                }
+            }
+        }) {
+            println!("Closure ran!");
+        } else {
+            println!("Property not found or lock failed");
+        }
+        None
     }
 
     pub fn get_mons(&self) -> Option<Value> {
@@ -264,3 +289,9 @@ pub fn get_enriched_party() -> Option<Vec<Option<EnrichedMon>>> {
 
     Some(enriched)
 }
+#[command]
+pub fn get_pokemon_info(state: tauri::State<SharedState>) -> Option<&Property> {
+    Party::get_pokemon_info(state)
+}
+
+struct PartyPokemonInfo {}

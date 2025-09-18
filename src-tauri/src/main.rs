@@ -5,20 +5,35 @@
 extern crate gammaeditor_lib;
 
 use std::collections::HashMap;
-use std::fs::File;
+use std::fs::{create_dir, create_dir_all, File};
 use std::{array, clone, process};
+use std::sync::{Arc, RwLock};
+use gvas::GvasFile;
 use tauri::command;
 use gammaeditor_lib::run;
 use indexmap::map::IndexMap;
+use serde_json::json;
+use crate::save::{AppState, SharedState};
 
-mod menu;
+pub mod menu;
 pub mod file;
-mod save;
-mod pkmn;
-mod commands;
+pub mod save;
+pub mod pkmn;
+pub mod commands;
+pub mod logger;
 
 fn main() {
+    let app_state: AppState = AppState {
+        file_path: None,
+        gvas_file: None,
+        json: None,
+    };
+    let shared_state: SharedState = Arc::new(RwLock::new(app_state));
+
+    create_dir_all("logs").expect("Couldn't create logs dir");
+
     tauri::Builder::default()
+        .manage(shared_state)
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri_commands!())
         .setup(|app| {
@@ -32,7 +47,7 @@ fn main() {
         .run(tauri::generate_context!())
         .expect("failed to run app");
 
-    eprintln!("Loaded");
+    logger::info("Loaded");
 
     gammaeditor_lib::run();
 }

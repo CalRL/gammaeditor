@@ -3,16 +3,19 @@ pub mod cache;
 pub mod store;
 
 use std::fs;
+use std::fs::File;
 use std::io::Cursor;
 use crate::file::save::{set_loaded_file, LoadedFile};
 use serde_json::Value;
 use std::path::Path;
 use std::process::Command;
-use tauri::{command, AppHandle, Emitter, Window};
+use std::sync::{RwLockReadGuard, RwLockWriteGuard};
+use tauri::{command, AppHandle, Emitter, Manager, Window};
 use tauri_plugin_dialog::DialogExt;
 use crate::file::cache::cache;
 use crate::file::store::{Store, GLOBAL_STORE};
 use crate::save::player::get_properties;
+use crate::save::{AppState, SharedState};
 
 pub fn handle_open(app: AppHandle, window: Window) {
     app.dialog().file().pick_file(move |file_path| {
@@ -20,6 +23,11 @@ pub fn handle_open(app: AppHandle, window: Window) {
             let os_path = path.as_path().unwrap();
 
             eprintln!("With path: {:?}", os_path);
+            let shared_state: tauri::State<SharedState> = app.state::<SharedState>();
+            let mut state:RwLockWriteGuard<AppState> = shared_state.write().unwrap();
+            state.file_path = path.clone().into_path().ok();
+            state.load_gvas();
+
 
             let output = Command::new("gvas2json")
                 .arg(os_path)

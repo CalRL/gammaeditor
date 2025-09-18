@@ -7,6 +7,7 @@ use std::os::raw::c_void;
 use std::panic::panic_any;
 use std::ptr::null;
 use std::sync::{Arc, RwLock};
+use gvas::GvasFile;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use once_cell::sync::Lazy;
@@ -103,7 +104,7 @@ impl Store {
         Self {
             save_file: Arc::new(RwLock::new(SaveFile {
                 properties: HashMap::new(),
-            }))
+            })),
         }
     }
 

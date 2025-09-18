@@ -58,6 +58,11 @@ export default function Test() {
         console.log(res);
     }
 
+    async function getInfo() {
+        const res = await invoke<any>("get_pokemon_info");
+        console.log(res);
+    }
+
     useOnSaveLoad(fetchMoney);
 
     return(
@@ -70,6 +75,7 @@ export default function Test() {
             <button onClick={getShiny}>getShiny</button>
             <button onClick={getEnriched}>getEnriched</button>
             <button onClick={test}>TEST STORE</button>
+            <button onClick={getInfo}>GET INFO</button>
             <MovesTest />
         </div>
     );
