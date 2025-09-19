@@ -1,7 +1,7 @@
 use std::sync::RwLockReadGuard;
 use gvas::properties::array_property::ArrayProperty;
 use gvas::properties::Property;
-use gvas::properties::struct_property::StructProperty;
+use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
 use crate::logger;
 use crate::save::boxes::box_data::CustomStruct;
 use crate::save::enums::SaveKeys;
@@ -42,5 +42,7 @@ impl PartyPokemonInfo {
     pub fn get_name(s: &SharedState, index: usize) -> Option<String> {
         let info = PartyPokemonInfo::get_info_by_index(s, index);
         // info?.value.get_custom_struct().index
+
+        None
     }
 }

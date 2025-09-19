@@ -113,7 +113,7 @@ pub fn set_player_money(value: i64) -> Result<(), String> {
 
 #[command]
 pub fn get_trainer_name() -> Result<String, String> {
-    let trainer = TrainerName::new().map_err(|e| e.to_string())?;;
+    let trainer = TrainerName::new().map_err(|e| e.to_string())?;
 
     let name = trainer.get_name().map_err(|e| e.to_string());
     eprintln!("Nmae: {name:?}");

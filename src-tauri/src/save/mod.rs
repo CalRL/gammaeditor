@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io;
 use std::io::Write;
 use std::path::PathBuf;
-use std::sync::{Arc, LockResult, MappedRwLockReadGuard, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::{Arc, LockResult, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use chrono::format::Item::Error;
 use gvas::game_version::GameVersion;
 use gvas::GvasFile;
