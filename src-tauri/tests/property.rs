@@ -73,8 +73,8 @@ fn test_get_starts_with_gets_is_fainted() {
     let second = structs.get(1).expect("second struct");
     match &second.value {
         StructPropertyValue::CustomStruct { .. } => {
-            let first = Property::StructProperty(second.clone());
-            if let Some(is_fainted) = first.get_starts_with("isFainted") {
+            let s = Property::StructProperty(second.clone());
+            if let Some(is_fainted) = s.get_starts_with("isFainted") {
                 match is_fainted {
                     Property::BoolProperty(inner) => {
                         println!("{}, {}", inner.value, false);

@@ -26,3 +26,38 @@ fn test_party_pokemon_info() {
         panic!("PartyPokemonInfo not found in save file");
     }
 }
+
+fn get_state() -> SharedState {
+    let mut file = File::open("tests/resource/Slot1.sav").expect("save file not found");
+    let gvas = GvasFile::read(&mut file, GameVersion::Default).expect("failed to parse");
+
+    let app_state: AppState = AppState {
+        file_path: None,
+        gvas_file: Some(Arc::new(RwLock::new(gvas))),
+        json: None,
+    };
+    let state: SharedState = Arc::new(RwLock::new(app_state));
+    state
+}
+
+#[test]
+fn get_level_gets_level() {
+    let state = get_state();
+    let level = PartyPokemonInfo::get_level(&state, 1);
+    if let Some(lvl) = level {
+        assert_eq!(lvl, 61);
+        return;
+    }
+    panic!("no level found")
+}
+
+fn get_gvas_file() -> GvasFile {
+    let mut f = File::open("tests/resource/Slot1.sav").expect("open sav");
+    GvasFile::read(&mut f, GameVersion::Default).expect("read gvas")
+}
+
+#[test]
+fn set_level_sets_level() {
+    let state: Arc<RwLock<AppState>> = get_state().clone();
+    let gvas = state.read().ok()?.gvas_file?.read().ok()?;
+}
