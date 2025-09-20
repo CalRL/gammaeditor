@@ -21,6 +21,7 @@ pub mod save;
 pub mod pkmn;
 pub mod commands;
 pub mod logger;
+pub mod property;
 
 fn main() {
     let app_state: AppState = AppState {
