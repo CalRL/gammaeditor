@@ -58,6 +58,42 @@ pub static GLOBAL_APPSTATE: Lazy<AppState> = Lazy::new(|| AppState::empty());
 pub type SharedGvas = Arc<RwLock<GvasFile>>;
 pub type SharedState = Arc<RwLock<AppState>>;
 
+pub struct Shared(SharedState);
+
+
+pub trait SharedStateExt {
+    fn with<R>(&self, f: impl FnOnce(&AppState) -> R) -> Option<R>;
+    fn with_mut<R>(&self, f: impl FnOnce(&mut AppState) -> R) -> Option<R>;
+    fn with_key<R>(&self, key: &str, f: impl FnOnce(Property) -> R) -> Option<R>;
+    fn with_key_mut<R>(&self, key: &str, f: impl FnOnce(&mut Property) -> R) -> Option<R>;
+}
+
+impl SharedStateExt for SharedState {
+    fn with<R>(&self, f: impl FnOnce(&AppState) -> R) -> Option<R> {
+        let guard: RwLockReadGuard<AppState> = self.read().ok()?;
+        Some(f(&guard))
+    }
+
+    fn with_mut<R>(&self, f: impl FnOnce(&mut AppState) -> R) -> Option<R> {
+        let mut guard: RwLockWriteGuard<AppState> = self.write().ok()?;
+        Some(f(&mut guard))
+    }
+
+    fn with_key<R>(&self, key: &str, f: impl FnOnce(Property) -> R) -> Option<R> {
+        let guard: RwLockReadGuard<AppState> = self.read().ok()?;
+        let gvas_guard: RwLockReadGuard<GvasFile> = guard.gvas_file.as_ref()?.read().ok()?;
+        let properties: &IndexMap<String, Property> = &gvas_guard.properties;
+        properties.get(key).map(|prop| f(prop.clone()))
+    }
+
+    fn with_key_mut<R>(&self, key: &str, f: impl FnOnce(&mut Property) -> R) -> Option<R> {
+        let mut guard: RwLockWriteGuard<AppState> = self.write().ok()?;
+        let mut gvas_guard: RwLockWriteGuard<GvasFile> = guard.gvas_file.as_mut()?.write().ok()?;
+        let mut properties: &mut IndexMap<String, Property> = &mut gvas_guard.properties;
+        let prop: &mut Property = properties.get_mut(key)?;
+        Some(f(prop))
+    }
+}
 pub struct AppState {
     pub file_path: Option<PathBuf>,
     pub gvas_file: Option<SharedGvas>,
@@ -72,7 +108,6 @@ impl AppState {
             json: None,
         }
     }
-    
     pub fn from_state(state: &AppState) -> &Self {
         state
     }
