@@ -40,6 +40,42 @@ impl PartyPokemonInfo {
         }
     }
 
+    fn get_double(s: &SharedState, index: usize, key: &str) {
+
+    }
+    fn set_double(s: &SharedState, index: usize, key: &str, double: f64) {
+
+    }
+
+    fn get_int(s: &SharedState, index: usize, key: &str) -> Option<i32>{
+        let info: StructProperty = Self::get_info_by_index(s, index)?;
+        if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
+            for (k, v) in properties.0 {
+                if k.starts_with(key) {
+                    if let Some(Property::IntProperty(int_prop)) = v.first() {
+                        return Some(int_prop.value);
+                    }
+                }
+            }
+        }
+        None
+    }
+    fn set_int(s: &SharedState, index: usize, key: &str, int: i32) -> Option<()> {
+        StructPropertyValue::with_party_pokemon_mut(s, index, |props| {
+            for (k, v) in props.iter_mut() {
+                if k.starts_with(key) {
+                    if let Some(Property::IntProperty(int_prop)) = v.first_mut() {
+                        int_prop.value = int;
+                        return Some(());
+                    }
+                }
+            }
+            None
+        })
+    }
+
+
+
     pub fn get_level(s: &SharedState, index: usize) -> Option<i32> {
         let info = Self::get_info_by_index(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
