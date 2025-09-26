@@ -22,12 +22,7 @@ pub fn get_name(info: &HashMap<String, Value>) -> Option<String> {
 }
 
 pub fn get_box_key(box_number: i64) -> Option<String>{
-    match box_number {
-        0 => { Some("Box1".to_string()) }
-        1 => { Some("Box2".to_string()) }
-        2 => { Some("Box3".to_string()) }
-        _ => { None }
-    }
+    Option::from(format!("Box{}", box_number))
 }
 
 pub fn get_first_starts_with<'a>(
