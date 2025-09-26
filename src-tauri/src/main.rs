@@ -1,5 +1,4 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-#![allow(warnings)]
 
 #[macro_use]
 extern crate gammaeditor_lib;
@@ -36,7 +35,7 @@ fn main() {
     tauri::Builder::default()
         .manage(shared_state)
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri_commands!())
+        .invoke_handler(tauri::generate_handler![])
         .setup(|app| {
             let app_handle = app.handle();
             menu::build_menu(app_handle);
