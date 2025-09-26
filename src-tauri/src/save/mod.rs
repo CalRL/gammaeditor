@@ -53,8 +53,6 @@ pub fn save_to_json() -> Result<(), String> {
     Ok(())
 }
 
-pub static GLOBAL_APPSTATE: Lazy<AppState> = Lazy::new(|| AppState::empty());
-
 pub type SharedGvas = Arc<RwLock<GvasFile>>;
 pub type SharedState = Arc<RwLock<AppState>>;
 
@@ -180,10 +178,10 @@ impl AppState {
                 eprintln!("Lock succeeded!");
                 eprintln!("Contains key '{}': {}", key, guard.properties.contains_key(key));
                 if let Some(prop) = guard.properties.get(key) {
-                    return Some(f(prop));
+                    Some(f(prop))
                 } else {
                     eprintln!("Key not found in map");
-                    return None;
+                    None
                 }
             }
             Err(e) => {
