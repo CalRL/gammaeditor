@@ -1,11 +1,9 @@
-use std::fs::File;
-use std::sync::{Arc, RwLock};
+use gammaeditor_lib::save::party::party_pokemon_info::PartyPokemonInfo;
+use gammaeditor_lib::save::{AppState, SharedState};
 use gvas::game_version::GameVersion;
 use gvas::GvasFile;
-use gvas::properties::int_property::BytePropertyValue;
-use gammaeditor_lib::save::party::party_pokemon_info;
-use gammaeditor_lib::save::{AppState, Shared, SharedState, SharedStateExt};
-use gammaeditor_lib::save::party::party_pokemon_info::PartyPokemonInfo;
+use std::fs::File;
+use std::sync::{Arc, RwLock};
 
 #[test]
 fn test_party_pokemon_info() {

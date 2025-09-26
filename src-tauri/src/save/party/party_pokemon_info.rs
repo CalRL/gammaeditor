@@ -1,16 +1,13 @@
-use std::io::ErrorKind;
 use crate::save::enums::SaveKeys;
-use crate::save::{AppState, SharedState, SharedStateExt};
+use crate::save::{AppState, Shared, SharedGvas, SharedState, SharedStateExt};
 use gvas::properties::array_property::ArrayProperty;
-use gvas::properties::int_property::{BytePropertyValue, DoubleProperty};
+use gvas::properties::int_property::BytePropertyValue;
 use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
-use gvas::properties::Property;
-use std::sync::RwLockReadGuard;
-use std::sync::TryLockError::Poisoned;
 use gvas::properties::text_property::FTextHistory;
-use gvas::types::map::HashableIndexMap;
+use gvas::properties::Property;
+use gvas::GvasFile;
 use indexmap::IndexMap;
-use crate::property::PropertyPath;
+use std::sync::{RwLockReadGuard, RwLockWriteGuard};
 
 pub struct PartyPokemonInfo {
 
@@ -18,25 +15,50 @@ pub struct PartyPokemonInfo {
 
 impl PartyPokemonInfo {
 
-    pub fn get_party_pokemon_info(s: &SharedState) -> Option<ArrayProperty> {
-        let guard: RwLockReadGuard<AppState> = s.read().ok()?;
-        guard.with_property(SaveKeys::PartyPokemonInfo.as_str(), |prop| match prop.clone() {
-            Property::ArrayProperty(inner) => Some(inner),
+    /// Read-only access to the Party array
+    pub fn party_array<'a>(state: &SharedState) -> Option<&'a ArrayProperty> {
+        let guard: RwLockReadGuard<AppState> = state.read().ok()?;
+        let shared: SharedGvas = guard.gvas_file?;
+        let g: RwLockReadGuard<GvasFile> = shared.read().ok()?;
+        let party: &Property = g.properties.get("PartyPokemonInfo")?;
+
+        match party {
+            Property::ArrayProperty(array) => Some(array),
             _ => None
-        })?
+        }
     }
 
-    /// returns a clone
-    pub fn get_info_by_index(s: &SharedState, index: usize) -> Option<StructProperty> {
-        let array: ArrayProperty = Self::get_party_pokemon_info(s)?;
-
+    /// Immutable lookup by index (returns a clone of the StructProperty)
+    pub fn party_at(state: &SharedState, index: usize) -> Option<StructProperty> {
+        let array = Self::party_array(state)?;
         match array {
-            ArrayProperty::Structs { structs, .. }=> {
-                structs.get(index).cloned()
+            ArrayProperty::Structs { structs, .. } => structs.get(index).cloned(),
+            _ => None,
+        }
+    }
+
+    /// Mutable access to the Party array
+    pub fn party_array_mut<'a>(
+        state: &'a Shared,
+    ) -> Option<RwLockWriteGuard<'a, ArrayProperty>> {
+        let mut guard = state.write().ok()?;
+        guard.with_property_mut(SaveKeys::PartyPokemonInfo.as_str(), |prop| {
+            match prop {
+                Property::ArrayProperty(inner) => Some(inner),
+                _ => None,
             }
-            _ => {
-                None
-            }
+        })
+    }
+
+    /// Mutable lookup by index (returns a mutable borrow into the StructProperty)
+    pub fn party_at_mut<'a>(
+        state: &'a Shared,
+        index: usize,
+    ) -> Option<&'a mut StructProperty> {
+        let mut array: RwLockWriteGuard<ArrayProperty> = Self::party_array_mut(state)?;
+        match &mut array {
+            ArrayProperty::Structs { mut structs, .. } => structs.get_mut(index),
+            _ => None,
         }
     }
 
@@ -48,7 +70,7 @@ impl PartyPokemonInfo {
     }
 
     fn get_int(s: &SharedState, index: usize, key: &str) -> Option<i32>{
-        let info: StructProperty = Self::get_info_by_index(s, index)?;
+        let info: StructProperty = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with(key) {
@@ -77,7 +99,7 @@ impl PartyPokemonInfo {
 
 
     pub fn get_level(s: &SharedState, index: usize) -> Option<i32> {
-        let info = Self::get_info_by_index(s, index)?;
+        let info = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with("Level_") {
@@ -119,7 +141,7 @@ impl PartyPokemonInfo {
     }
 
     pub fn get_is_fainted(s: &SharedState, index: usize) -> Option<bool> {
-        let info = Self::get_info_by_index(s, index)?;
+        let info = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with("isFainted?") {
@@ -149,7 +171,7 @@ impl PartyPokemonInfo {
     }
 
     pub fn get_name(s: &SharedState, index: usize) -> Option<String> {
-        let info = Self::get_info_by_index(s, index)?;
+        let info = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with("Name_") {
@@ -179,7 +201,7 @@ impl PartyPokemonInfo {
     }
 
     pub fn get_current_hp(s: &SharedState, index: usize) -> Option<f64> {
-        let info = Self::get_info_by_index(s, index)?;
+        let info = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with("CurrentHP_") {
@@ -207,7 +229,7 @@ impl PartyPokemonInfo {
     }
 
     pub fn get_max_hp(s: &SharedState, index: usize) -> Option<f64> {
-        let info = Self::get_info_by_index(s, index)?;
+        let info = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with("MaxHP_") {
@@ -235,7 +257,7 @@ impl PartyPokemonInfo {
     }
 
     pub fn get_atk(s: &SharedState, index: usize) -> Option<f64> {
-        let info = Self::get_info_by_index(s, index)?;
+        let info = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with("ATK_") {
@@ -263,7 +285,7 @@ impl PartyPokemonInfo {
     }
 
     pub fn get_def(s: &SharedState, index: usize) -> Option<f64> {
-        let info = Self::get_info_by_index(s, index)?;
+        let info = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with("DEF_") {
@@ -291,7 +313,7 @@ impl PartyPokemonInfo {
     }
 
     pub fn get_satk(s: &SharedState, index: usize) -> Option<f64> {
-        let info = Self::get_info_by_index(s, index)?;
+        let info = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with("SATK_") {
@@ -319,7 +341,7 @@ impl PartyPokemonInfo {
     }
 
     pub fn get_sdef(s: &SharedState, index: usize) -> Option<f64> {
-        let info = Self::get_info_by_index(s, index)?;
+        let info = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with("SDEF_") {
@@ -347,7 +369,7 @@ impl PartyPokemonInfo {
     }
 
     pub fn get_speed(s: &SharedState, index: usize) -> Option<f64> {
-        let info = Self::get_info_by_index(s, index)?;
+        let info = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with("SPEED_") {
@@ -375,7 +397,7 @@ impl PartyPokemonInfo {
     }
 
     pub fn get_primary_type(s: &SharedState, index: usize) -> Option<String> {
-        let info = Self::get_info_by_index(s, index)?;
+        let info = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with("PrimaryType_") {
@@ -405,7 +427,7 @@ impl PartyPokemonInfo {
     }
 
     pub fn get_secondary_type(s: &SharedState, index: usize) -> Option<String> {
-        let info = Self::get_info_by_index(s, index)?;
+        let info = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with("SecondaryType_") {
@@ -435,7 +457,7 @@ impl PartyPokemonInfo {
     }
 
     pub fn get_nature(s: &SharedState, index: usize) -> Option<String> {
-        let info = Self::get_info_by_index(s, index)?;
+        let info = Self::party_at(s, index)?;
         if let StructPropertyValue::CustomStruct { properties, .. } = info.value {
             for (k, v) in properties.0 {
                 if k.starts_with("Nature_") {
