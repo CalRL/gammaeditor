@@ -75,7 +75,7 @@ impl PartyPokemonInfo {
 
     pub fn get_starts_with<'a>(file: &'a GvasFile, index: usize, prefix: String) -> Option<&'a Property> {
         let item: &StructProperty = Self::party_at(file, index)?;
-        if let StructPropertyValue::CustomStruct { properties, .. } = item.value {
+        if let StructPropertyValue::CustomStruct { properties, .. } = &item.value {
             for (k, v) in properties.0.iter() {
                 if k.starts_with(prefix.as_str()) {
                     return v.first()
@@ -108,15 +108,19 @@ impl PartyPokemonInfo {
         prop.get_int().map(|int| int.value)
     }
 
+    /// Gets the stat value (prop must be a Property)
     pub fn get_stat(prop: &Property) -> Option<f64> {
         prop.get_f64().map(|d| d.value.0)
     }
 
+    /// Sets the stat, then returns it
     pub fn set_stat(prop: &mut Property, new: f64) -> Option<f64> {
         let double = prop.get_f64_mut()?;
         *double = DoubleProperty::new(new);
         Some(*double.value)
     }
+
+
 
 
 
