@@ -5,8 +5,8 @@ use serde_json::Value;
 use crate::pkmn::{types, EnrichedMon, Stats, Types};
 use crate::save::player::get_properties;
 use tauri::command;
+use tracing::info;
 use crate::file::store::Store;
-use crate::logger;
 use crate::save::enums::SaveKeys;
 use crate::save::{party, AppState, SharedState};
 use crate::save::utils::{get_first_starts_with, get_name, get_starts_with};
@@ -65,8 +65,7 @@ impl Party {
             if let Property::ArrayProperty(inner) = prop {
                 match inner {
                     ArrayProperty::Structs { structs,  .. } => {
-                        logger::info(format!("Got Structs with {} entries", structs.len()).as_str());
-                        logger::info(format!("Struct = {:?}", structs[0]).as_str());
+                        println!("Struct = {:?}", structs[0]);
                     }
                     _ => {
                         println!("ArrayProperty but not Structs");
