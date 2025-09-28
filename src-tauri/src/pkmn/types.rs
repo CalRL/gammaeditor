@@ -14,17 +14,17 @@
 // ENUM_PokemonTypePrimary::NewEnumerator17 None?
 // ENUM_PokemonTypePrimary::NewEnumerator18 fairy
 
-fn get_enum_number(enum_str: &str) -> Option<u64> {
+fn get_enum_number(enum_str: &str) -> Option<i32> {
     enum_str.to_string()
         .split("::")
         .last()
         .and_then(|part| part.strip_prefix("NewEnumerator"))
-        .and_then(|part| part.parse::<u64>().ok())
+        .and_then(|part| part.parse::<i32>().ok())
 }
 
 pub fn from_enum(enum_str: &str) -> Option<&str> {
 
-    let num = get_enum_number(enum_str).unwrap();
+    let num: i32 = get_enum_number(enum_str)?;
     match num {
         0 => Some("BUG"),
         2 => Some("FLYING"),
@@ -41,7 +41,7 @@ pub fn from_enum(enum_str: &str) -> Option<&str> {
         16 => Some("WATER"),
         17 => Some("NONE"),
         18 => Some("FAIRY"),
-        _ => Some("unknown"),
+        _ => None,
     }
 }
 
