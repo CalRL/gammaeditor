@@ -24,7 +24,7 @@
 // 23 careful
 // ENUM_Natures::NewEnumerator24 quirky
 
-pub fn get_nature_from_enum(enum_str: &str) -> Option<&'static str> {
+pub fn get_nature_from_enum(enum_str: &str) -> Option<&str> {
     match enum_str {
         "ENUM_Natures::NewEnumerator0" => Some("hardy"),
         "ENUM_Natures::NewEnumerator1" => Some("lonely"),
