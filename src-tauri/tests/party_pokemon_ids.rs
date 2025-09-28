@@ -3,7 +3,6 @@ use std::sync::{Arc, RwLock};
 use gvas::game_version::GameVersion;
 use gvas::GvasFile;
 use gvas::properties::array_property::ArrayProperty;
-use tracing::info;
 use gammaeditor_lib::save::AppState;
 use gammaeditor_lib::save::party::party_pokemon_id::PartyPokemonID;
 
