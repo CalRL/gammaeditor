@@ -1,9 +1,7 @@
 // ENUM_Natures::NewEnumerator0 hardy
 // 1 lonely
 // 2 brave
-// 3 adamant
-// 4 naughty
-// 5 bold
+// 3 adamant   
 // ENUM_Natures::NewEnumerator6 docile
 // ENUM_Natures::NewEnumerator7 relaxed
 // 8 impish
@@ -24,33 +22,36 @@
 // 23 careful
 // ENUM_Natures::NewEnumerator24 quirky
 
+/// Returns nature as a lowercase string
 pub fn get_nature_from_enum(enum_str: &str) -> Option<&str> {
-    match enum_str {
-        "ENUM_Natures::NewEnumerator0" => Some("hardy"),
-        "ENUM_Natures::NewEnumerator1" => Some("lonely"),
-        "ENUM_Natures::NewEnumerator2" => Some("brave"),
-        "ENUM_Natures::NewEnumerator3" => Some("adamant"),
-        "ENUM_Natures::NewEnumerator4" => Some("naughty"),
-        "ENUM_Natures::NewEnumerator5" => Some("bold"),
-        "ENUM_Natures::NewEnumerator6" => Some("docile"),
-        "ENUM_Natures::NewEnumerator7" => Some("relaxed"),
-        "ENUM_Natures::NewEnumerator8" => Some("impish"),
-        "ENUM_Natures::NewEnumerator9" => Some("lax"),
-        "ENUM_Natures::NewEnumerator10" => Some("timid"),
-        "ENUM_Natures::NewEnumerator11" => Some("hasty"),
-        "ENUM_Natures::NewEnumerator12" => Some("serious"),
-        "ENUM_Natures::NewEnumerator13" => Some("jolly"),
-        "ENUM_Natures::NewEnumerator14" => Some("naive"),
-        "ENUM_Natures::NewEnumerator15" => Some("modest"),
-        "ENUM_Natures::NewEnumerator16" => Some("mild"),
-        "ENUM_Natures::NewEnumerator17" => Some("quiet"),
-        "ENUM_Natures::NewEnumerator18" => Some("bashful"),
-        "ENUM_Natures::NewEnumerator19" => Some("rash"),
-        "ENUM_Natures::NewEnumerator20" => Some("calm"),
-        "ENUM_Natures::NewEnumerator21" => Some("gentle"),
-        "ENUM_Natures::NewEnumerator22" => Some("sassy"),
-        "ENUM_Natures::NewEnumerator23" => Some("careful"),
-        "ENUM_Natures::NewEnumerator24" => Some("quirky"),
-        _ => None,
-    }
+    let nature: &str = match enum_str {
+        "ENUM_Natures::NewEnumerator0" => "hardy",
+        "ENUM_Natures::NewEnumerator1" => "lonely",
+        "ENUM_Natures::NewEnumerator2" => "brave",
+        "ENUM_Natures::NewEnumerator3" => "adamant",
+        "ENUM_Natures::NewEnumerator4" => "naughty",
+        "ENUM_Natures::NewEnumerator5" => "bold",
+        "ENUM_Natures::NewEnumerator6" => "docile",
+        "ENUM_Natures::NewEnumerator7" => "relaxed",
+        "ENUM_Natures::NewEnumerator8" => "impish",
+        "ENUM_Natures::NewEnumerator9" => "lax",
+        "ENUM_Natures::NewEnumerator10" => "timid",
+        "ENUM_Natures::NewEnumerator11" => "hasty",
+        "ENUM_Natures::NewEnumerator12" => "serious",
+        "ENUM_Natures::NewEnumerator13" => "jolly",
+        "ENUM_Natures::NewEnumerator14" => "naive",
+        "ENUM_Natures::NewEnumerator15" => "modest",
+        "ENUM_Natures::NewEnumerator16" => "mild",
+        "ENUM_Natures::NewEnumerator17" => "quiet",
+        "ENUM_Natures::NewEnumerator18" => "bashful",
+        "ENUM_Natures::NewEnumerator19" => "rash",
+        "ENUM_Natures::NewEnumerator20" => "calm",
+        "ENUM_Natures::NewEnumerator21" => "gentle",
+        "ENUM_Natures::NewEnumerator22" => "sassy",
+        "ENUM_Natures::NewEnumerator23" => "careful",
+        "ENUM_Natures::NewEnumerator24" => "quirky",
+        _ => return None,
+    };
+    
+    Some(nature)
 }

@@ -1,11 +1,13 @@
 
 pub fn get_gender_from_enum(enum_str: &str) -> Option<&str> {
-    match enum_str {
-        "ENUM_Gender::NewEnumerator0" => Some("MALE"),
-        "ENUM_Gender::NewEnumerator1" => Some("FEMALE"),
-        "ENUM_Gender::NewEnumerator2" => Some("GENDERLESS"),
-        _ => None,
-    }
+    let gender = match enum_str {
+        "ENUM_Gender::NewEnumerator0" => "MALE",
+        "ENUM_Gender::NewEnumerator1" => "FEMALE",
+        "ENUM_Gender::NewEnumerator2" => "GENDERLESS",
+        _ => return None,
+    };
+
+    Some(gender)
 }
 
 pub enum Gender {
