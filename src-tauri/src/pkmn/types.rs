@@ -14,6 +14,29 @@
 // ENUM_PokemonTypePrimary::NewEnumerator17 None?
 // ENUM_PokemonTypePrimary::NewEnumerator18 fairy
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Types {
+    Normal,
+    Fighting,
+    Flying,
+    Poison,
+    Ground,
+    Rock,
+    Bug,
+    Ghost,
+    Steel,
+    Unknown,
+    Fire,
+    Water,
+    Grass,
+    Electric,
+    Psychic,
+    Ice,
+    Dragon,
+    Dark,
+    Fairy,
+}
+
 fn get_enum_number(enum_str: &str) -> Option<i32> {
     enum_str.to_string()
         .split("::")
