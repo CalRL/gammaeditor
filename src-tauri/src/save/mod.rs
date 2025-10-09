@@ -11,7 +11,6 @@ use indexmap::IndexMap;
 use once_cell::sync::Lazy;
 use crate::file::save::{get_loaded_file, get_loaded_file_mut};
 use crate::file::store::Store;
-use crate::logger;
 use crate::save::enums::SaveKeys;
 
 pub mod player;
@@ -22,6 +21,7 @@ pub mod boxes;
 pub mod enums;
 pub mod party;
 pub mod party_legacy;
+pub mod pokemon;
 
 pub fn save_to_json_file(slot_name: &str) -> Result<(), String> {
     let file_guard = get_loaded_file().ok_or("No file loaded").ok();
