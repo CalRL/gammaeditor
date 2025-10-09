@@ -12,6 +12,7 @@ use tauri::command;
 use gammaeditor_lib::run;
 use indexmap::map::IndexMap;
 use serde_json::json;
+use tracing::info;
 use crate::save::{AppState, SharedState};
 
 pub mod menu;
@@ -19,7 +20,6 @@ pub mod file;
 pub mod save;
 pub mod pkmn;
 pub mod commands;
-pub mod logger;
 pub mod property;
 
 fn main() {
@@ -47,7 +47,7 @@ fn main() {
         .run(tauri::generate_context!())
         .expect("failed to run app");
 
-    logger::info("Loaded");
+    println!("Loaded");
 
     gammaeditor_lib::run();
 }
