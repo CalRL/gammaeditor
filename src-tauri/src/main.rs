@@ -8,7 +8,6 @@ use std::fs::create_dir_all;
 use std::sync::{Arc, RwLock};
 use std::process;
 use tauri::command;
-use tracing::info;
 
 pub mod menu;
 pub mod file;
