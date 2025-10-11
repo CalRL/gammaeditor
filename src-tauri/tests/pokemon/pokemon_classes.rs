@@ -2,7 +2,7 @@ use gammaeditor_lib::save::pokemon::pokemon_classes::PokemonClasses;
 use crate::pokemon::pokemon_classes::common::get_gvas;
 
 #[path = "../common.rs"]
-mod common;
+pub(crate) mod common;
 
 #[test]
 fn test_class_at_valid() {

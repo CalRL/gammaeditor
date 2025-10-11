@@ -1,4 +1,3 @@
-use gammaeditor_lib::property::PropertyPath;
 use gvas::game_version::GameVersion;
 use gvas::properties::array_property::ArrayProperty;
 use gvas::properties::int_property::BytePropertyValue;
@@ -6,6 +5,7 @@ use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
 use gvas::properties::Property;
 use gvas::GvasFile;
 use std::fs::File;
+use gammaeditor_lib::property::traits::PropertyPath;
 
 #[test]
 fn test_get_starts_with_gets_level() {

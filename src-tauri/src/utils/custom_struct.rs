@@ -1,3 +1,9 @@
+use gvas::properties::Property;
+use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
+use indexmap::IndexMap;
+
+pub type CustomStruct<'a> = (&'a String, &'a IndexMap<String, Vec<Property>>);
+
 /// Returns a vector of properties ina StructProperty,
 /// In our case, it's usually a single object inside anyway
 // e.g.:

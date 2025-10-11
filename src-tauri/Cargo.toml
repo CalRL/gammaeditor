@@ -29,4 +29,6 @@ anyhow = "1.0.98"
 gvas = { version = "0.10.0", features = ["serde"] }
 indexmap = "2.11.3"
 
+[dev-dependencies]
+ordered-float = { version = "4.6.0"}
 

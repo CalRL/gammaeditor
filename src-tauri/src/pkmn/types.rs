@@ -14,6 +14,8 @@
 // ENUM_PokemonTypePrimary::NewEnumerator17 None?
 // ENUM_PokemonTypePrimary::NewEnumerator18 fairy
 
+use std::str::FromStr;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Types {
     Normal,
@@ -36,7 +38,34 @@ pub enum Types {
     Dark,
     Fairy,
 }
+impl FromStr for Types {
+    type Err = ();
 
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let t = match s {
+            "Normal" => Types::Normal,
+            "Fighting" => Types::Fighting,
+            "Flying" => Types::Flying,
+            "Poison" => Types::Poison,
+            "Ground" => Types::Ground,
+            "Rock" => Types::Rock,
+            "Bug" => Types::Bug,
+            "Ghost" => Types::Ghost,
+            "Steel" => Types::Steel,
+            "Fire" => Types::Fire,
+            "Water" => Types::Water,
+            "Grass" => Types::Grass,
+            "Electric" => Types::Electric,
+            "Psychic" => Types::Psychic,
+            "Ice" => Types::Ice,
+            "Dragon" => Types::Dragon,
+            "Dark" => Types::Dark,
+            "Fairy" => Types::Fairy,
+            _ => Types::Unknown,
+        };
+        Ok(t)
+    }
+}
 fn get_enum_number(enum_str: &str) -> Option<i32> {
     enum_str.to_string()
         .split("::")
