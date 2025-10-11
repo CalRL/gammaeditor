@@ -3,18 +3,12 @@
 #[macro_use]
 extern crate gammaeditor_lib;
 
-use crate::save::{AppState, SharedState};
 use std::fs::create_dir_all;
 use std::sync::{Arc, RwLock};
 use std::process;
 use tauri::command;
-
-pub mod menu;
-pub mod file;
-pub mod save;
-pub mod pkmn;
-pub mod commands;
-pub mod property;
+use gammaeditor_lib::menu;
+use gammaeditor_lib::save::{AppState, SharedState};
 
 fn main() {
     let app_state: AppState = AppState {

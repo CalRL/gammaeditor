@@ -5,6 +5,7 @@ pub mod save;
 pub mod pkmn;
 pub mod commands;
 pub mod property;
+pub mod utils;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
