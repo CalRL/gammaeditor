@@ -10,23 +10,6 @@ use gammaeditor_lib::save::pokemon::pokemon_info;
 use gammaeditor_lib::utils::custom_struct::get_struct_property_at_idx;
 use crate::pokemon::pokemon_classes::common::get_gvas;
 
-fn make_bool_property(value: bool) -> Property {
-    Property::BoolProperty(BoolProperty { value })
-}
-
-fn make_double_property(value: f64) -> Property {
-    Property::DoubleProperty(DoubleProperty {
-        value: OrderedFloat(value),
-    })
-}
-
-fn make_namespaced_property(value: &str) -> Property {
-    Property::ByteProperty(ByteProperty {
-        name: None,
-        value: BytePropertyValue::Namespaced(value.to_string()),
-    })
-}
-
 #[test]
 fn get_sturct_at_idx_gets() {
     let gvas = get_gvas();
