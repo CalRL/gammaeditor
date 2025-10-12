@@ -49,3 +49,20 @@ pub enum IVs {
     SDEF,
     SPEED
 }
+
+impl FromStr for IVs {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let iv: IVs = match s {
+            "HP" => IVs::HP,
+            "ATK" => IVs::ATK,
+            "DEF" => IVs::DEF,
+            "SATK" => IVs::SATK,
+            "SDEF" => IVs::SDEF,
+            "SPEED" => IVs::SPEED,
+            _ => return Err(()),
+        };
+        Ok(iv)
+    }
+}
