@@ -3,6 +3,7 @@ use serde::Serialize;
 pub mod types;
 pub mod natures;
 pub mod gender;
+pub mod stats;
 
 #[derive(Debug, Serialize, Clone)]
 pub struct EnrichedMon {

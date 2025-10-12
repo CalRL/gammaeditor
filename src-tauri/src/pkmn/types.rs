@@ -99,5 +99,11 @@ pub fn from_enum(enum_str: &str) -> Option<&str> {
     Some(t)
 }
 
+pub enum TypeOrder {
+    PRIMARY,
+    SECONDARY
+}
+
+
 
 

@@ -1,9 +1,13 @@
+use gvas::GvasFile;
 use gvas::properties::int_property::{BoolProperty, ByteProperty, BytePropertyValue, DoubleProperty};
 use gvas::properties::Property;
+use gvas::properties::struct_property::StructProperty;
 use ordered_float::OrderedFloat;
+use gammaeditor_lib::pkmn;
+use gammaeditor_lib::pkmn::stats::Stats;
 use gammaeditor_lib::property::traits::StartsWith;
-use gammaeditor_lib::save::boxes::get_pokemon_info;
-use gammaeditor_lib::save::pokemon::pokemon_info::get_struct_at_idx;
+use gammaeditor_lib::save::pokemon::pokemon_info;
+use gammaeditor_lib::utils::custom_struct::get_struct_at_idx;
 use crate::pokemon::pokemon_classes::common::get_gvas;
 
 fn make_bool_property(value: bool) -> Property {
@@ -146,4 +150,20 @@ fn get_struct_at_idx_gets() {
 "#;
     let actual = serde_json::to_string_pretty(cs).expect("get string");
     assert_eq!(actual.trim(), expected.trim())
+}
+
+
+#[test]
+fn get_stat() {
+    let gvas = get_gvas();
+    let prop = gvas.properties.get("PartyPokemonInfo").expect("get party info");
+    let str = get_struct_at_idx(prop, 0).expect("get struct");
+
+    let custom_struct = str.value.get_custom_struct().expect("get custom struct");
+    let stat = pokemon_info::get_stat(&custom_struct.1, Stats::ATK);
+    println!("{}", serde_json::to_string_pretty().unwrap());
+    assert_eq!(1,2)
+
+
+
 }

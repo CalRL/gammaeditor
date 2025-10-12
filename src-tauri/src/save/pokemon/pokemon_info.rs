@@ -2,33 +2,14 @@ use gvas::properties::array_property::ArrayProperty;
 use gvas::properties::int_property::BytePropertyValue;
 use gvas::properties::Property;
 use gvas::properties::struct_property::{StructProperty};
+use crate::pkmn::stats::Stats;
 use crate::property::traits::{NamespacedValue, PropertyPath, StartsWith};
 use crate::utils::custom_struct::CustomStruct;
 
-pub fn get_struct_at_idx(property: &Property, idx: usize) -> Option<&StructProperty> {
-    let array = match property {
-        Property::ArrayProperty(prop) => {
-            prop
-        }
-        _ => return None
-    };
-
-    match array {
-        ArrayProperty::Structs { structs, .. } => {
-            structs.get(idx)
-        }
-        _ => None
-    }
-}
-
-pub fn get_info_at_idx_mut(property: &mut Property, idx: usize) -> Option<&mut ArrayProperty> {
-    todo!()
-}
-
 pub fn get_is_fainted(struct_property: &StructProperty) -> Option<bool> {
 
-    let is_fainted = struct_property.get_starts_with("isFainted")?;
-    let first = is_fainted.first()?;
+    let is_fainted: &Vec<Property> = struct_property.get_starts_with("isFainted")?;
+    let first: &Property = is_fainted.first()?;
     match first {
 
         Property::BoolProperty(bool) => {
@@ -37,36 +18,15 @@ pub fn get_is_fainted(struct_property: &StructProperty) -> Option<bool> {
         _ => None
     }
 }
-enum TypePriority {
-    PRIMARY,
-    SECONDARY
-}
 
-pub enum Stats {
-    CurrentHp,
-    MaxHp,
-    ATK,
-    DEF,
-    SATK,
-    SDEF,
-    SPEED
-}
-
-impl<'a> Stats {
-    pub fn as_str(&self) -> &str {
-        match &self {
-            Stats::CurrentHp => "CurrentHP",
-            Stats::MaxHp => "MaxHP",
-            Stats::ATK => "ATK",
-            Stats::DEF => "DEF",
-            Stats::SATK => "SATK",
-            Stats::SDEF => "SDEF",
-            Stats::SPEED => "SPEED",
-        }
-    }
-}
 /// Takes the custom struct indexmap.
-pub fn get_stat(properties: &Property, stat: Stats) -> Option<f64>{
+// properties: The properties inside the custom struct
+// e.g.
+// "CustomStruct": {
+// "type_name": "STRUCT_CharacterAttributes",
+// "properties": { <- **THIS**
+// must not be casted to structproperty, get_starts_with handles that...
+pub fn get_stat(properties: &Property, stat: Stats) -> Option<f64> {
     let stat_str: &str = stat.as_str();
     let stat_property = properties.get_starts_with(stat_str)?;
     match &stat_property {
