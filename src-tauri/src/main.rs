@@ -17,7 +17,6 @@ fn main() {
         gvas_file: None,
         json: None,
     };
-    let shared_state: SharedState = Arc::new(RwLock::new(app_state));
 
     create_dir_all("logs").expect("Couldn't create logs dir");
 
