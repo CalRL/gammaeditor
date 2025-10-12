@@ -1,13 +1,13 @@
 use gvas::GvasFile;
 use gvas::properties::int_property::{BoolProperty, ByteProperty, BytePropertyValue, DoubleProperty};
 use gvas::properties::Property;
-use gvas::properties::struct_property::StructProperty;
+use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
 use ordered_float::OrderedFloat;
 use gammaeditor_lib::pkmn;
 use gammaeditor_lib::pkmn::stats::Stats;
 use gammaeditor_lib::property::traits::StartsWith;
 use gammaeditor_lib::save::pokemon::pokemon_info;
-use gammaeditor_lib::utils::custom_struct::get_struct_at_idx;
+use gammaeditor_lib::utils::custom_struct::get_struct_property_at_idx;
 use crate::pokemon::pokemon_classes::common::get_gvas;
 
 fn make_bool_property(value: bool) -> Property {
@@ -31,7 +31,7 @@ fn make_namespaced_property(value: &str) -> Property {
 fn get_sturct_at_idx_gets() {
     let gvas = get_gvas();
     let prop = gvas.properties.get("PartyPokemonInfo").expect("unwrap prop");
-    let cs = get_struct_at_idx(prop, 0).expect("unwrap struct");
+    let cs = get_struct_property_at_idx(prop, 0).expect("unwrap struct");
     let is_fainted = cs.get_starts_with("isFainted").expect("get isfainted");
     let first = is_fainted.first().expect("get first");
     let val = match first {
@@ -47,7 +47,7 @@ fn get_sturct_at_idx_gets() {
 fn get_struct_at_idx_gets() {
     let gvas = get_gvas();
     let prop = gvas.properties.get("PartyPokemonInfo").expect("unwrap prop");
-    let cs = get_struct_at_idx(prop, 0).expect("unwrap struct");
+    let cs = get_struct_property_at_idx(prop, 0).expect("unwrap struct");
     let expected = r#"
 {
   "CustomStruct": {
@@ -156,14 +156,127 @@ fn get_struct_at_idx_gets() {
 #[test]
 fn get_stat() {
     let gvas = get_gvas();
-    let prop = gvas.properties.get("PartyPokemonInfo").expect("get party info");
-    let str = get_struct_at_idx(prop, 0).expect("get struct");
+    let prop = gvas.properties.get("PartyPokemonInfo").unwrap();
+    let poke_struct = get_struct_property_at_idx(prop, 0).unwrap();
 
-    let custom_struct = str.value.get_custom_struct().expect("get custom struct");
-    let stat = pokemon_info::get_stat(&custom_struct.1, Stats::ATK);
-    println!("{}", serde_json::to_string_pretty().unwrap());
-    assert_eq!(1,2)
+    let stat = pokemon_info::get_stat(poke_struct, Stats::ATK).expect("get stat");
+
+    assert_eq!(stat, 614f64)
+}
+
+#[test]
+fn get_hp_returns_correctly() {
+    let gvas = get_gvas();
+    let prop = gvas.properties.get("PartyPokemonInfo").unwrap();
+    let p = get_struct_property_at_idx(prop, 0).unwrap();
+
+    let max_hp = pokemon_info::get_stat(p, Stats::MaxHp).expect("get maxhp");
+    let hp = pokemon_info::get_stat(p, Stats::MaxHp).expect("get maxhp");
+
+    assert_eq!(max_hp, 614f64);
+    assert_eq!(hp, 614f64);
+}
+
+#[test]
+fn get_physical_stats_returns_correctly() {
+    let gvas = get_gvas();
+    let prop = gvas.properties.get("PartyPokemonInfo").unwrap();
+    let p = get_struct_property_at_idx(prop, 0).unwrap();
+
+    let atk = pokemon_info::get_stat(p, Stats::ATK).expect("get atk");
+    let def = pokemon_info::get_stat(p, Stats::DEF).expect("get def");
+
+    assert_eq!(atk, 614f64);
+    assert_eq!(def, 609f64);
+}
+
+#[test]
+fn get_special_stats_returns_correctly() {
+    let gvas = get_gvas();
+    let prop = gvas.properties.get("PartyPokemonInfo").unwrap();
+    let p = get_struct_property_at_idx(prop, 0).unwrap();
+
+    let sp_atk = pokemon_info::get_stat(p, Stats::SATK).expect("get satk");
+    let sp_def = pokemon_info::get_stat(p, Stats::SDEF).expect("get sdef");
+
+    assert_eq!(sp_atk, 576f64);
+    assert_eq!(sp_def, 571f64);
+}
+
+#[test]
+fn get_speed_returns_correctly() {
+    let gvas = get_gvas();
+    let prop = gvas.properties.get("PartyPokemonInfo").unwrap();
+    let p = get_struct_property_at_idx(prop, 0).unwrap();
+
+    let speed = pokemon_info::get_stat(p, Stats::SPEED).expect("get speed");
+
+    assert_eq!(speed, 552f64);
+}
+
+#[test]
+fn get_nature() {
+    let gvas = get_gvas();
+    let prop = gvas.properties.get("PartyPokemonInfo").unwrap();
+    let poke_struct = get_struct_property_at_idx(prop, 0).unwrap();
+
+    let nature = pokemon_info::get_nature(poke_struct).expect("get nature");
+    let expected = "ENUM_Natures::NewEnumerator0";
+    assert_eq!(nature, expected)
+}
+
+#[test]
+fn get_primary_type() {
+    let gvas = get_gvas();
+    let prop = gvas.properties.get("PartyPokemonInfo").unwrap();
+    let poke_struct = get_struct_property_at_idx(prop, 0).unwrap();
+
+    let primary = pokemon_info::get_primary_type_string(poke_struct).expect("get nature");
+    let expected = "ENUM_PokemonTypePrimary::NewEnumerator8";
+    assert_eq!(primary, expected)
+}
+
+#[test]
+fn get_secondary_type() {
+    let gvas = get_gvas();
+    let prop = gvas.properties.get("PartyPokemonInfo").unwrap();
+    let poke_struct = get_struct_property_at_idx(prop, 0).unwrap();
+
+    let secondary = pokemon_info::get_secondary_type_string(poke_struct).expect("get nature");
+    let expected = "ENUM_PokemonTypePrimary::NewEnumerator15";
+    assert_eq!(secondary, expected)
+}
 
 
+#[test]
+fn get_nature_string() {
+    let gvas = get_gvas();
+    let prop = gvas.properties.get("PartyPokemonInfo").unwrap();
+    let poke_struct = get_struct_property_at_idx(prop, 0).unwrap();
 
+    let nature = pokemon_info::get_nature_string(poke_struct).expect("get nature");
+    let expected = "ENUM_Natures::NewEnumerator0";
+    assert_eq!(nature, expected)
+}
+
+#[test]
+fn get_name_string() {
+    let gvas = get_gvas();
+    let prop = gvas.properties.get("PartyPokemonInfo").unwrap();
+    let poke_struct = get_struct_property_at_idx(prop, 0).unwrap();
+
+    let name = pokemon_info::get_name(poke_struct).expect("get name");
+    let expected = "METAGROSS";
+    assert_eq!(name, expected)
+}
+
+#[test]
+fn get_level() {
+    let gvas = get_gvas();
+    let prop = gvas.properties.get("PartyPokemonInfo").unwrap();
+    let poke_struct = get_struct_property_at_idx(prop, 0).unwrap();
+
+    let level = pokemon_info::get_level(poke_struct).expect("get level");
+    let expected = 48;
+    assert_eq!(level, expected)
 }
