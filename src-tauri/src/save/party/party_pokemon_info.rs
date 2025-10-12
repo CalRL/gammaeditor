@@ -556,30 +556,3 @@ impl PartyPokemonInfo {
     //     None
     // }
 }
-
-pub trait PartyPokemonExt {
-    fn with_party_pokemon_mut<R>(
-        state: &SharedState,
-        index: usize,
-        f: impl FnOnce(&mut IndexMap<String, Vec<Property>>) -> Option<R>,
-    ) -> Option<R>;
-}
-
-impl PartyPokemonExt for StructPropertyValue {
-    fn with_party_pokemon_mut<R>(
-        state: &SharedState,
-        index: usize,
-        f: impl FnOnce(&mut IndexMap<String, Vec<Property>>) -> Option<R>,
-    ) -> Option<R> {
-        state.with_key_mut("PartyPokemonInfo", |prop| {
-            if let Property::ArrayProperty(ArrayProperty::Structs { structs, .. }) = prop {
-                if let Some(inner) = structs.get_mut(index) {
-                    if let StructPropertyValue::CustomStruct { properties, .. } = &mut inner.value {
-                        return f(&mut properties.0);
-                    }
-                }
-            }
-            None
-        })?
-    }
-}
