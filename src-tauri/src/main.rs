@@ -9,6 +9,7 @@ use std::process;
 use tauri::command;
 use gammaeditor_lib::menu;
 use gammaeditor_lib::save::{AppState, SharedState};
+use gammaeditor_lib::tauri_commands;
 
 fn main() {
     let app_state: AppState = AppState {
@@ -21,9 +22,9 @@ fn main() {
     create_dir_all("logs").expect("Couldn't create logs dir");
 
     tauri::Builder::default()
-        .manage(shared_state)
+        .manage(app_state)
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![])
+        .invoke_handler(tauri_commands!())
         .setup(|app| {
             let app_handle = app.handle();
             menu::build_menu(app_handle);
