@@ -33,6 +33,7 @@ pub trait StartsWith {
 }
 
 impl StartsWith for StructProperty {
+    /// Returns a vector of properties. In our case (usually), the vector contains a single object
     fn get_starts_with(&self, string: &str) -> Option<&Vec<Property>> {
         match &self.value {
             StructPropertyValue::CustomStruct { properties, .. } => {
@@ -131,5 +132,29 @@ impl NamespacedValue for Property {
             BytePropertyValue::Namespaced(namespaced) => Some(namespaced),
             _ => None
         }
+    }
+}
+
+impl NamespacedValue for StructProperty {
+    fn get_namespaced_value(&self, string: &str) -> Option<&String> {
+        let vec = self.get_starts_with(string)?;
+        let prop = vec.first()?;
+        let byte = match prop {
+            Property::ByteProperty(byte) => {
+                Some(byte)
+            }
+            _ => None
+        }?;
+
+        match &byte.value {
+            BytePropertyValue::Namespaced(namespace) => {
+                Some(namespace)
+            }
+            _ => None
+        }
+    }
+
+    fn get_namespaced_value_mut(&mut self, string: &str) -> Option<&mut String> {
+        todo!()
     }
 }
