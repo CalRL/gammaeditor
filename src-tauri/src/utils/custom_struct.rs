@@ -42,7 +42,7 @@ fn get_starts_with_mut<'a>(value: &'a mut StructProperty, string: &str) -> Optio
     }
 }
 
-pub fn get_struct_at_idx(property: &Property, idx: usize) -> Option<&StructProperty> {
+pub fn get_struct_property_at_idx(property: &Property, idx: usize) -> Option<&StructProperty> {
     let array = match property {
         Property::ArrayProperty(prop) => {
             prop
@@ -56,6 +56,10 @@ pub fn get_struct_at_idx(property: &Property, idx: usize) -> Option<&StructPrope
         }
         _ => None
     }
+}
+
+pub fn get_struct_at_idx(property: &Property, idx: usize) -> Option<&Property> {
+    todo!()
 }
 
 pub fn get_struct_at_idx_mut(property: &mut Property, idx: usize) -> Option<&mut StructProperty> {
