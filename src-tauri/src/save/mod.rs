@@ -2,16 +2,12 @@ use std::fs::File;
 use std::io;
 use std::io::Write;
 use std::path::PathBuf;
-use std::sync::{Arc, LockResult, RwLock, RwLockReadGuard, RwLockWriteGuard};
-use chrono::format::Item::Error;
+use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use gvas::game_version::GameVersion;
 use gvas::GvasFile;
 use gvas::properties::Property;
 use indexmap::IndexMap;
-use once_cell::sync::Lazy;
 use crate::file::save::{get_loaded_file, get_loaded_file_mut};
-use crate::file::store::Store;
-use crate::save::enums::SaveKeys;
 
 pub mod player;
 pub mod backup;
@@ -87,7 +83,7 @@ impl SharedStateExt for SharedState {
     fn with_key_mut<R>(&self, key: &str, f: impl FnOnce(&mut Property) -> R) -> Option<R> {
         let mut guard: RwLockWriteGuard<AppState> = self.write().ok()?;
         let mut gvas_guard: RwLockWriteGuard<GvasFile> = guard.gvas_file.as_mut()?.write().ok()?;
-        let mut properties: &mut IndexMap<String, Property> = &mut gvas_guard.properties;
+        let properties: &mut IndexMap<String, Property> = &mut gvas_guard.properties;
         let prop: &mut Property = properties.get_mut(key)?;
         Some(f(prop))
     }

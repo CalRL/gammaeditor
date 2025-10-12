@@ -2,14 +2,11 @@ pub mod save;
 pub mod cache;
 pub mod store;
 
-use std::fs;
-use std::fs::File;
-use std::io::Cursor;
 use crate::file::save::{set_loaded_file, LoadedFile};
 use serde_json::Value;
 use std::path::Path;
 use std::process::Command;
-use std::sync::{RwLockReadGuard, RwLockWriteGuard};
+use std::sync::RwLockWriteGuard;
 use tauri::{command, AppHandle, Emitter, Manager, Window};
 use tauri_plugin_dialog::DialogExt;
 use crate::file::cache::cache;
@@ -40,7 +37,7 @@ pub fn handle_open(app: AppHandle, window: Window) {
                     let _ = window.emit("gvas-result", stdout.to_string());
 
                     // Extracted conversion logic
-                    convert_to_json(&window, &stdout, os_path.clone());
+                    convert_to_json(&window, &stdout, os_path);
                     println!("Success!");
                 }
                 Ok(output) => {

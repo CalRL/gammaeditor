@@ -1,7 +1,6 @@
 // box_data.rs
 // Defines BoxData, which stores fully parsed data for each box
 
-use std::any::Any;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 

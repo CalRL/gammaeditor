@@ -1,13 +1,10 @@
 use crate::save::player::get_properties;
 use crate::save::utils::get_box_key;
 use once_cell::sync::Lazy;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::Mutex;
 use std::collections::HashMap;
-use std::ffi::c_void;
-use std::fs;
-use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use crate::pkmn::{EnrichedMon, Move, Stats, TotalMon, Types};
+use crate::pkmn::{Move, Stats, Types};
 
 pub struct CachedBox {
     pub info: Option<Vec<Value>>,

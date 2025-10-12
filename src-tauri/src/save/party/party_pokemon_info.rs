@@ -1,14 +1,10 @@
-use std::ops::{Deref, DerefMut};
-use crate::save::enums::SaveKeys;
-use crate::save::{AppState, Shared, SharedGvas, SharedState, SharedStateExt};
+use crate::save::{SharedState, SharedStateExt};
 use gvas::properties::array_property::ArrayProperty;
-use gvas::properties::int_property::{BytePropertyValue, DoubleProperty};
+use gvas::properties::int_property::DoubleProperty;
 use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
-use gvas::properties::text_property::FTextHistory;
 use gvas::properties::Property;
 use gvas::GvasFile;
 use indexmap::IndexMap;
-use std::sync::{LockResult, RwLockReadGuard, RwLockWriteGuard};
 
 pub struct PartyPokemonInfo {
 
@@ -42,7 +38,7 @@ impl PartyPokemonInfo {
     pub fn party_at_mut(file: &mut GvasFile, index: usize) -> Option<&mut StructProperty> {
 
 
-        let mut array: &mut ArrayProperty = Self::party_array_mut(file)?;
+        let array: &mut ArrayProperty = Self::party_array_mut(file)?;
         match array {
             ArrayProperty::Structs { ref mut structs, .. } => structs.get_mut(index),
             _ => None,
@@ -85,10 +81,10 @@ impl PartyPokemonInfo {
         None
     }
 
-    pub fn get_starts_with_mut<'a>(mut file: &'a mut GvasFile, index: usize, prefix: String) -> Option<&'a mut Property> {
+    pub fn get_starts_with_mut<'a>(file: &'a mut GvasFile, index: usize, prefix: String) -> Option<&'a mut Property> {
         let item: &mut StructProperty = Self::party_at_mut(file, index)?;
         if let StructPropertyValue::CustomStruct { properties, ..} = &mut item.value {
-            for (k, mut v) in (properties).0.iter_mut() {
+            for (k, v) in (properties).0.iter_mut() {
                 if k.starts_with(prefix.as_str()) {
                     return v.first_mut()
                 }

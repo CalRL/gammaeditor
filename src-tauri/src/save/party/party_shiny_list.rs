@@ -8,7 +8,7 @@ impl PartyShinyList {
         property.get_array()
     }
 
-    pub fn get_array_mut(mut property: &mut Property) -> Option<&mut ArrayProperty> {
+    pub fn get_array_mut(property: &mut Property) -> Option<&mut ArrayProperty> {
         property.get_array_mut()
     }
 

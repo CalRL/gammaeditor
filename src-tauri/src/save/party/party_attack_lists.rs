@@ -1,5 +1,4 @@
 use gvas::properties::array_property::ArrayProperty;
-use gvas::properties::object_property::ObjectProperty;
 use gvas::properties::Property;
 use gvas::properties::struct_property::{StructProperty};
 use crate::pkmn::types::Types;

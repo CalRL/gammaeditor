@@ -1,4 +1,3 @@
-use gvas::GvasFile;
 use gvas::properties::array_property::ArrayProperty;
 use gvas::properties::Property;
 

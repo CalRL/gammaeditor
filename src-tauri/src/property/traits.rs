@@ -1,4 +1,3 @@
-use gvas::properties::array_property::ArrayProperty;
 use gvas::properties::int_property::BytePropertyValue;
 use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
 use gvas::properties::Property;

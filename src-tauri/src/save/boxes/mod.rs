@@ -8,14 +8,12 @@ pub mod grid;
 pub mod box_data;
 pub mod trainer;
 
-use std::any::Any;
 use crate::pkmn::{natures, types, EnrichedMon, GridPos, Move, Stats, TotalMon, Types};
 use crate::save::player::get_properties;
-use crate::save::utils::{get_box_key, get_f64, get_first_starts_with, get_i64, get_name, get_namespaced, match_bool};
+use crate::save::utils::{get_box_key, get_f64, get_first_starts_with, get_i64, get_name, get_namespaced};
 use serde::Serialize;
-use serde_json::{Map, Value};
+use serde_json::Value;
 use std::collections::HashMap;
-use std::ops::Index;
 use tauri::command;
 use crate::pkmn::gender::get_gender_from_enum;
 use crate::save::boxes::level::get_level_by_index;

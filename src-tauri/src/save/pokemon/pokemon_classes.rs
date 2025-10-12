@@ -10,7 +10,7 @@ impl PokemonClasses {
         file.properties.get(&key)
     }
 
-    pub fn get_parent_mut(mut file: &mut GvasFile, key: String) -> Option<&mut Property> {
+    pub fn get_parent_mut(file: &mut GvasFile, key: String) -> Option<&mut Property> {
         file.properties.get_mut(&key)
     }
 

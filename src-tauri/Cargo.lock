@@ -1157,6 +1157,7 @@ dependencies = [
  "gvas",
  "indexmap 2.11.3",
  "once_cell",
+ "ordered-float",
  "serde",
  "serde_json",
  "tauri",

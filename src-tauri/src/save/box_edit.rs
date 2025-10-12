@@ -1,16 +1,15 @@
-use crate::file::save::{get_loaded_file_mut, LoadedFile};
+use crate::file::save::get_loaded_file_mut;
 use crate::save::utils::get_box_key;
 use serde_json::Value;
 use tauri::command;
-use crate::save::{save_to_json};
 
 #[command]
 pub fn set_shiny_by_index(box_number: i64, index: i64, state: bool) {
     {
         let mut file_guard = get_loaded_file_mut().unwrap();
-        let mut file = file_guard.as_mut().unwrap();
+        let file = file_guard.as_mut().unwrap();
 
-        let mut properties = &mut file.content["properties"];
+        let properties = &mut file.content["properties"];
 
         let box_key = get_box_key(box_number).unwrap();
         let key = format!("{}ShinyList", box_key);
@@ -27,9 +26,9 @@ pub fn set_shiny_by_index(box_number: i64, index: i64, state: bool) {
 pub fn set_iv_by_index(box_number: i64, index: i64, iv: &str, amount: i64) {
     {
         let mut file_guard = get_loaded_file_mut().unwrap();
-        let mut file = file_guard.as_mut().unwrap();
+        let file = file_guard.as_mut().unwrap();
 
-        let mut properties = &mut file.content["properties"];
+        let properties = &mut file.content["properties"];
 
         let box_key = get_box_key(box_number).unwrap();
         let key = format!("{}IV", box_key);

@@ -1,6 +1,5 @@
 use serde_json::Value;
 use std::collections::HashMap;
-use std::iter::Map;
 
 pub fn get_f64(info: &HashMap<String, Value>, prefix: &str) -> Option<f64> {
     info.iter().find(|(k, _)| k.starts_with(prefix))?.1.get(0)?.get("value")?.as_f64()
