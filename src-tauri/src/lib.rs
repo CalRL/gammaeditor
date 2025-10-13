@@ -7,6 +7,7 @@ pub mod commands;
 pub mod property;
 pub mod utils;
 pub mod logger;
+mod macros;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
