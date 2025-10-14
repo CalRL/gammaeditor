@@ -13,7 +13,9 @@ chrono = { version = "0.4", features = ["clock"] }
 gvas = { version = "0.10.0", features = ["serde"] }
 indexmap = "2.11.3"
 eframe = "0.33.0"
-egui = "0.33.0"
+egui = { version =  "0.33.0" }
+egui_extras = { version = "0.33.0", features = ["all_loaders"]}
+rfd = { version = "0.15.4" }
 
 [dev-dependencies]
 ordered-float = { version = "4.6.0"}
