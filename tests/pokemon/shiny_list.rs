@@ -1,8 +1,4 @@
-
-
-use gammaeditor_lib::save::party::party_pokemon_id::PartyPokemonID;
-use gammaeditor_lib::save::party::party_shiny_list::PartyShinyList;
-use gammaeditor_lib::save::pokemon::shiny_list::{get_shiny_at, get_shiny_list};
+use gammaeditor::save::pokemon::shiny_list::{get_shiny_at, get_shiny_list};
 use crate::pokemon::common::get_gvas;
 
 #[test]

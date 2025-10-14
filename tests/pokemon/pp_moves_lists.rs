@@ -1,8 +1,7 @@
 use gvas::GvasFile;
 use gvas::properties::array_property::ArrayProperty;
 use gvas::properties::Property;
-use gammaeditor_lib::save::party::party_pp_moves_lists::PartyPPMovesLists;
-use gammaeditor_lib::save::pokemon::pp_moves_lists::{current_pp_at, max_pp_at, moves_array, moves_at};
+use gammaeditor::save::pokemon::pp_moves_lists::{current_pp_at, max_pp_at, moves_array, moves_at};
 use crate::pokemon::common::get_gvas;
 
 #[test]

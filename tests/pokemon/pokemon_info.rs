@@ -3,11 +3,11 @@ use gvas::properties::int_property::{BoolProperty, ByteProperty, BytePropertyVal
 use gvas::properties::Property;
 use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
 use ordered_float::OrderedFloat;
-use gammaeditor_lib::pkmn;
-use gammaeditor_lib::pkmn::stats::Stats;
-use gammaeditor_lib::property::traits::StartsWith;
-use gammaeditor_lib::save::pokemon::pokemon_info;
-use gammaeditor_lib::utils::custom_struct::get_struct_property_at_idx;
+use gammaeditor::pkmn;
+use gammaeditor::pkmn::stats::Stats;
+use gammaeditor::property::traits::StartsWith;
+use gammaeditor::save::pokemon::pokemon_info;
+use gammaeditor::utils::custom_struct::get_struct_property_at_idx;
 use crate::pokemon::pokemon_classes::common::get_gvas;
 
 #[test]

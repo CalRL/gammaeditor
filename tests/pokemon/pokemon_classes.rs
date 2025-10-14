@@ -1,4 +1,4 @@
-use gammaeditor_lib::save::pokemon::pokemon_classes::{class_at};
+use gammaeditor::save::pokemon::pokemon_classes::{class_at};
 use crate::pokemon::pokemon_classes::common::get_gvas;
 
 #[path = "../common.rs"]

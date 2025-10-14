@@ -1,13 +1,8 @@
 #[path = "../common.rs"]
 mod common;
 
-use std::fs::File;
-use std::sync::{Arc, RwLock};
-use gvas::game_version::GameVersion;
-use gvas::GvasFile;
 use gvas::properties::array_property::ArrayProperty;
-use gammaeditor_lib::save::AppState;
-use gammaeditor_lib::save::pokemon::pokemon_id::{id_array, id_at, PokemonID};
+use gammaeditor::save::pokemon::pokemon_id::{id_array, id_at, PokemonID};
 use crate::pokemon::pokemon_id::common::get_gvas;
 
 #[test]
