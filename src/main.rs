@@ -1,28 +1,40 @@
 use std::process;
 use eframe::NativeOptions;
+use egui::{Context, CursorIcon, Label, Sense};
+use egui::accesskit::Role::AlertDialog;
+use egui::panel::TopBottomSide;
+use egui::X11WindowType::Dialog;
 use gvas::GvasFile;
+use rfd::{FileDialog, MessageDialog};
 use gammaeditor::ui::menu::render_menu_bar;
+use gammaeditor::ui::screen::{render_screen, Screen};
 
 fn main() {
     let native_options: NativeOptions = NativeOptions::default();
     let app_name: &str = "GammaEditor";
+
     eframe::run_native(
         app_name,
         native_options,
-        Box::new(|cc| Ok(Box::new(App::new(cc))))
+        Box::new(|cc| {
+            egui_extras::install_image_loaders(&cc.egui_ctx);
+            Ok(Box::new(App::new(cc)))
+        })
     )
         .expect("How did we get here?");
 }
 
 #[derive(Default)]
 struct App {
-    gvas_file: Option<GvasFile>
+    gvas_file: Option<GvasFile>,
+    screen: Screen
 }
 
 impl App {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         Self {
-            gvas_file: None
+            gvas_file: None,
+            screen: Screen::Party
         }
     }
 
@@ -54,7 +66,28 @@ impl App {
 impl eframe::App for App {
    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
        render_menu_bar(ctx);
+       render_navigation_bar(self, ctx);
+       render_screen(ctx, self.screen)
    }
+}
+
+fn render_navigation_bar(app: &mut App, ctx: &egui::Context) {
+    egui::TopBottomPanel::new(TopBottomSide::Top, "navbar").show(ctx, |ui| {
+        ui.horizontal(|ui| {
+            for screen in Screen::iter() {
+                let response = ui.add(Label::new(screen.as_str()).sense(Sense::click()));
+
+                if response.hovered() {
+                    ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
+                }
+
+                if response.clicked() {
+                    app.screen = screen
+                }
+            }
+        })
+
+    });
 }
 
 fn run_generator(args: Vec<String>) -> Result<String, String> {

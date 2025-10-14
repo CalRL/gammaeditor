@@ -5,4 +5,5 @@ pub mod utils;
 pub mod logger;
 pub mod macros;
 pub mod ui;
+pub mod file;
 
