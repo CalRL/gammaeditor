@@ -1,7 +1,9 @@
 use eframe::epaint::CornerRadius;
 use eframe::glow::RGBA;
 use egui::{include_image, CentralPanel, Color32, Frame, Image, ImageSource, Rgba, Rounding, Stroke, TextureOptions, Vec2};
+use gvas::GvasFile;
 use crate::file::parse_with_root;
+use crate::ui::party_screen::PartyScreen;
 
 #[derive(Copy, Clone)]
 pub enum Screen {
@@ -43,16 +45,11 @@ pub fn render_pokemon_path<'a>(name: String, is_shiny: bool) -> String {
         name
     )
 }
-pub fn render_screen(ctx: &egui::Context, screen: Screen) {
+pub fn render_screen(ctx: &egui::Context, screen: Screen, gvas_file: &GvasFile) {
     CentralPanel::default().show(ctx, |ui| {
         match screen {
             Screen::Party => {
                 egui::Grid::new("party-grid").show(ui, |ui| {
-                    let image = Image::new(render_pokemon_path("Treecko".to_string(), false))
-                        .fit_to_exact_size(Vec2::new(64.0, 64.0))
-                        .texture_options(TextureOptions::NEAREST)
-                        .corner_radius(5)
-                        .bg_fill(Rgba::from_rgb(255.0, 255.0, 255.0));
 
                     Frame::new()
                         .fill(Color32::from_gray(30))
@@ -60,12 +57,7 @@ pub fn render_screen(ctx: &egui::Context, screen: Screen) {
                         .rounding(Rounding::same(8))
                         .inner_margin(Vec2::splat(8.0))
                         .show(ui, |ui| {
-                            ui.add(image.clone());
-                            ui.add(image.clone());
-                            ui.add(image.clone());
-                            ui.add(image.clone());
-                            ui.add(image.clone());
-                            ui.add(image.clone());
+                            PartyScreen::ui(ui, gvas_file)
                         });
 
                 });
