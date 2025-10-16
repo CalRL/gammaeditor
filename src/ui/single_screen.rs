@@ -25,6 +25,6 @@ impl ScreenTrait for SingleScreen {
     }
 
     fn ui(&mut self, ui: &mut Ui) {
-        ui.label("hi");
+        ui.label("hii");
     }
 }
