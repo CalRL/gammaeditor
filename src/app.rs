@@ -1,24 +1,64 @@
-use egui::{CursorIcon, Label, Sense};
+use std::ops::Deref;
+use eframe::emath::Align;
+use crate::ui::screen::ScreenTrait;
+use egui::{CursorIcon, Id, Label, Sense};
 use egui::panel::TopBottomSide;
 use gvas::GvasFile;
-use crate::save::pokemon::SelectedMon;
+use rfd::MessageLevel;
+use crate::logger::{Logger};
+use crate::save::pokemon::{SelectedMon};
 use crate::ui::menu::render_menu_bar;
-use crate::ui::screen::{render_screen, Screen};
+use crate::ui::party_screen::PartyScreen;
+use crate::ui::single_screen::SingleScreen;
+use crate::ui::screen::{render_screen, Screen, ScreenState};
+use crate::ui::screen::Screen::Party;
 
-#[derive(Default)]
 pub struct App {
     pub gvas_file: Option<GvasFile>,
     pub screen: Screen,
-    pub selected_mon: Option<SelectedMon>
-    pub logger
+    pub selected_mon: Option<SelectedMon>,
+    pub screen_state: ScreenState,
+    pub screens: Screens
+}
+
+pub struct Screens {
+    pub party_screen: PartyScreen,
+    pub single_screen: SingleScreen
 }
 
 impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+
+        let logger = match Logger::init() {
+            Ok(_) => {}
+            Err(e) => {
+                rfd::MessageDialog::new()
+                    .set_level(MessageLevel::Error)
+                    .set_title("Program crash")
+                    .set_description(format!(
+                        "Logger failed to start.\
+                         Please check the app has sufficient permissions to create files.\
+                         {}", e)
+                    )
+                    .show();
+                panic!()
+            }
+        };
+
         Self {
             gvas_file: None,
             screen: Screen::Party,
             selected_mon: None,
+            screen_state: ScreenState::Empty(),
+            screens: Screens {
+                party_screen: PartyScreen {
+                    containers: vec![],
+                },
+                single_screen: SingleScreen {
+                    selected_mon: None,
+                    mon_data: None
+                },
+            }
         }
     }
 
@@ -45,31 +85,64 @@ impl App {
             }
         }
     }
+
+    pub fn set_screen(&mut self, new_screen: Screen) {
+        self.screen = new_screen;
+
+        let gvas = match &self.gvas_file {
+            None => {return}
+            Some(gvas) => {gvas}
+        };
+
+        match self.screen {
+            Screen::Party => {
+                self.screens.party_screen.load(gvas);
+
+            }
+            Screen::Boxes => {}
+            Screen::Settings => {}
+            Screen::Single => {
+
+            }
+        };
+
+        Logger::info("Load call success")
+    }
 }
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        ctx.data_mut(|map| {
+            map.insert_persisted(
+                Id::new("selected_mon"),
+                None::<Option<SelectedMon>>
+            )
+        });
         render_menu_bar(ctx, self);
         render_navigation_bar(self, ctx);
-        if self.is_save_loaded() {
-            render_screen(ctx, self.screen, &self.gvas_file.as_ref().unwrap());
-        }
 
+        if self.is_save_loaded() {
+            render_screen(self, ctx);
+        }
     }
 }
 
 fn render_navigation_bar(app: &mut App, ctx: &egui::Context) {
     egui::TopBottomPanel::new(TopBottomSide::Top, "navbar").show(ctx, |ui| {
-        ui.horizontal(|ui| {
-            for screen in Screen::iter() {
-                let response = ui.add(Label::new(screen.as_str()).sense(Sense::click()));
+        ui.horizontal_centered(|ui| {
+            for screen in [
+                Screen::Party,
+            ] {
+                let label = screen.as_str();
+
+                let response = ui.add(Label::new(label).halign(Align::Center).sense(Sense::click()));
 
                 if response.hovered() {
                     ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
                 }
 
                 if response.clicked() {
-                    app.screen = screen
+                    app.set_screen(screen);
                 }
             }
         })

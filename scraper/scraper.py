@@ -6,8 +6,10 @@ import time
 os.makedirs("images/normal", exist_ok=True)
 os.makedirs("images/shiny", exist_ok=True)
 
-# Load names from list.txt
-with open("list.txt", "r", encoding="utf-8") as f:
+file = input("Enter the file name (no extension) ")
+
+# Load names from file
+with open(f"{file.strip()}.txt", "r", encoding="utf-8") as f:
     names = [line.strip() for line in f if line.strip()]
 
 
@@ -40,6 +42,10 @@ def download(mon_name):
 
 
 # Iterate through all mons
+print("Download starting")
 for name in names:
+
     download(name)
     time.sleep(0.5)
+
+print("Download Finished.")

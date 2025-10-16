@@ -3,10 +3,10 @@ use std::fs::{File, OpenOptions};
 use std::{io, thread};
 use std::io::Write;
 use std::path::PathBuf;
-use std::sync::mpsc;
-use std::sync::mpsc::Sender;
+use std::sync::{mpsc, Mutex, OnceLock};
+use std::sync::mpsc::{Receiver, Sender};
 use std::time::SystemTime;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local, Utc};
 
 pub fn info(message: &str) {
     let mut file: File = get_log_file();
@@ -36,77 +36,132 @@ pub fn get_log_file() -> File {
         }
     }
 }
+
+static LOGGER_SENDER: OnceLock<Mutex<Sender<LogMessage>>> = OnceLock::new();
+static LAST_LOGGED: OnceLock<Mutex<Option<String>>> = OnceLock::new();
+
+
 #[derive(Clone)]
 pub struct Logger {
     sender: Sender<LogMessage>
 }
 
-struct LogMessage {
+pub struct LogMessage {
     level: LogLevel,
-    text: String,
+    content: String,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum LogLevel {
     Info,
     Error,
+    Warn,
 }
 
 impl Logger {
-    pub fn new() -> Self {
-        let (tx, rx) = mpsc::channel::<LogMessage>();
+
+    pub fn create_dir() -> Result<(), String>{
+        if let Err(e) = std::fs::create_dir_all("logs") {
+            return Err("Failed to create log dir: {e}".to_string());
+        };
+
+
+        Ok(())
+    }
+
+
+    pub fn create_file() -> Result<File, String> {
+        let now: DateTime<Utc> = Utc::now();
+        let file_name = format!("logs/{}.log", now.format("%d-%m-%y"));
+
+        match OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&file_name)
+        {
+            Ok(f) => Ok(f),
+            Err(e) => Err("Failed to open log file: {e}".to_string())
+        }
+    }
+
+    pub fn init() -> Result<(), String> {
+        let dir_created: () = match Self::create_dir() {
+            Ok(_) => {
+
+            }
+            Err(err) => {
+                return Err(err)
+            }
+        };
+
+        let mut file: File = match Self::create_file() {
+            Ok(f) => {f}
+            Err(e) => { return Err(e)}
+        };
+
+        let (tx, rx): (Sender<LogMessage>, Receiver<LogMessage>) = mpsc::channel::<LogMessage>();
 
         thread::spawn(move || {
             loop {
-                let now: DateTime<Utc> = Utc::now();
-                let file_name = format!("logs/{}.log", now.format("%d-%m-%y"));
-
-                if let Err(e) = std::fs::create_dir_all("logs") {
-                    eprintln!("Failed to create log dir: {e}");
-                    continue;
-                }
-
-                let mut file = match OpenOptions::new()
-                    .create(true)
-                    .append(true)
-                    .open(&file_name)
-                {
-                    Ok(f) => f,
-                    Err(e) => {
-                        eprintln!("Failed to open log file: {e}");
-                        continue;
-                    }
-                };
-
                 // Block until msg
                 if let Ok(msg) = rx.recv() {
-                    let timestamp = Utc::now().format("%H:%M:%S").to_string();
-                    let prefix = match msg.level {
+                    let timestamp: String = Utc::now().format("%H:%M:%S").to_string();
+                    let prefix: &str = match msg.level {
                         LogLevel::Info => "[INFO]",
                         LogLevel::Error => "[ERROR]",
+                        LogLevel::Warn => "[WARN]"
                     };
-                    let line = format!("{timestamp} > {prefix} {}", msg.text);
+                    let line: String = format!("{timestamp} > {prefix} {}", msg.content);
                     if let Err(e) = writeln!(file, "{}", line) {
                         eprintln!("Failed to write to log: {e}");
+                    }
+
+                    if let Err(e) = file.flush() {
+                        eprintln!("[Logger] Failed to flush: {e}");
                     }
                 }
             }
         });
 
-        Self { sender: tx }
+        LOGGER_SENDER.set(Mutex::new(tx)).ok();
+
+        Ok(())
     }
 
-    pub fn info(&self, message: impl Into<String>) {
-        let _ = self.sender.send(LogMessage {
-            level: LogLevel::Info,
-            text: message.into(),
-        });
+    pub fn sender() -> Option<&'static Mutex<Sender<LogMessage>>> {
+        LOGGER_SENDER.get()
     }
 
-    pub fn error(&self, message: impl Into<String>) {
-        let _ = self.sender.send(LogMessage {
-            level: LogLevel::Error,
-            text: message.into(),
-        });
+
+    /// Send a non-blocking log message
+    pub fn log(level: LogLevel, message: impl Into<String>) {
+
+        let msg = message.into();
+
+        // Initialise on first use
+        let last_logged = LAST_LOGGED.get_or_init(|| Mutex::new(None));
+
+        {
+            let mut last = last_logged.lock().unwrap();
+            if last.as_ref() == Some(&msg.clone()) {
+                return; // same as previous → skip
+            }
+            *last = Some(msg.clone());
+        }
+
+        if let Some(mtx) = Self::sender() {
+            if let Ok(sender) = mtx.lock() {
+                let string: String = msg.clone();
+                println!("{:?} > {}", level, string);
+                let _ = sender.send(LogMessage {
+                    level,
+                    content: string,
+                });
+            }
+        }
     }
+
+    pub fn info(msg: impl Into<String>) { Self::log(LogLevel::Info, msg); }
+    pub fn warn(msg: impl Into<String>) { Self::log(LogLevel::Warn, msg); }
+    pub fn error(msg: impl Into<String>) { Self::log(LogLevel::Error, msg); }
 }

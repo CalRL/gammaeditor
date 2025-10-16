@@ -9,15 +9,25 @@ pub mod pp_moves_lists;
 pub mod iv_struct;
 pub mod gender;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum StorageType {
     PARTY,
     BOXES
 }
 
+#[derive(Clone)]
 pub struct SelectedMon {
     pub(crate) storage_type: StorageType,
     pub(crate) index: usize,
+}
+
+impl Default for SelectedMon {
+    fn default() -> Self {
+        Self {
+            storage_type: StorageType::PARTY,
+            index: 0
+        }
+    }
 }
 
 

@@ -39,7 +39,12 @@ pub fn class_at_mut(array: &mut ArrayProperty, idx: usize) -> Option<&mut String
 pub fn parse_class(class: &str) -> Option<String> {
     let string: String = String::from(class);
     let class: String = string.split(".").last()?.to_string();
-    let name: String = class.replace("BP_", "").replace("_C", "").to_string();
+    let name: String = class
+        .replace("BP_", "")
+        .replace("_C", "")
+        .replace("Player_", "")
+        .to_string();
+
     Some(name)
 }
 

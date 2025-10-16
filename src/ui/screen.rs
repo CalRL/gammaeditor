@@ -1,8 +1,6 @@
-use eframe::epaint::CornerRadius;
-use eframe::glow::RGBA;
-use egui::{include_image, CentralPanel, Color32, Frame, Image, ImageSource, Rgba, Rounding, Stroke, TextureOptions, Vec2};
+use egui::{include_image, CentralPanel, Color32, Context, Frame, Id, Image, ImageSource, Rgba, Rounding, Stroke, TextureOptions, Ui, Vec2};
 use gvas::GvasFile;
-use crate::file::parse_with_root;
+use crate::app::App;
 use crate::ui::party_screen::PartyScreen;
 
 #[derive(Copy, Clone)]
@@ -10,6 +8,21 @@ pub enum Screen {
     Party,
     Boxes,
     Settings,
+    Single
+}
+
+pub enum ScreenState {
+    Party(PartyScreen),
+    Empty()
+}
+
+impl ScreenState {
+    pub fn name(&self) -> &str {
+        match self {
+            ScreenState::Party(_) => {"Party"}
+            _ => ""
+        }
+    }
 }
 
 impl Default for Screen {
@@ -23,7 +36,8 @@ impl Screen {
         [
             Screen::Party,
             Screen::Boxes,
-            Screen::Settings
+            Screen::Settings,
+            // we dont want Single in here
         ].into_iter()
     }
 
@@ -32,8 +46,15 @@ impl Screen {
             Screen::Party => {"Party"}
             Screen::Boxes => {"Boxes"}
             Screen::Settings => {"Settings"}
+            Screen::Single => {"Single"}
         }
     }
+}
+
+pub trait ScreenTrait {
+    fn load(&mut self, gvas_file: &GvasFile);
+    fn ui(&mut self, ui: &mut Ui);
+
 }
 
 pub fn render_pokemon_path<'a>(name: String, is_shiny: bool) -> String {
@@ -45,29 +66,11 @@ pub fn render_pokemon_path<'a>(name: String, is_shiny: bool) -> String {
         name
     )
 }
-pub fn render_screen(ctx: &egui::Context, screen: Screen, gvas_file: &GvasFile) {
+pub fn render_screen(app_state: &mut App, ctx: &egui::Context) {
     CentralPanel::default().show(ctx, |ui| {
-        match screen {
-            Screen::Party => {
-                egui::Grid::new("party-grid").show(ui, |ui| {
-
-                    Frame::new()
-                        .fill(Color32::from_gray(30))
-                        .stroke(Stroke::new(1.0, Color32::LIGHT_GRAY))
-                        .rounding(Rounding::same(8))
-                        .inner_margin(Vec2::splat(8.0))
-                        .show(ui, |ui| {
-                            PartyScreen::ui(ui, gvas_file)
-                        });
-
-                });
-            }
-            Screen::Boxes => {
-                ui.label("Boxes");
-            }
-            Screen::Settings => {
-                ui.label("Settings");
-            }
+        match &mut app_state.screen {
+            Screen::Party => app_state.screens.party_screen.ui(ui),
+            _ => {return}
         }
     });
 

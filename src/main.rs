@@ -1,9 +1,11 @@
 use std::process;
 use eframe::NativeOptions;
 use gammaeditor::app::App;
-
+use gammaeditor::logger::Logger;
 
 fn main() {
+    Logger::init().unwrap();
+
     let native_options: NativeOptions = NativeOptions::default();
     let app_name: &str = "GammaEditor";
 

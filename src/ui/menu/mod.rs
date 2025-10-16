@@ -7,6 +7,8 @@ use gvas::game_version::GameVersion;
 use gvas::GvasFile;
 use crate::app::App;
 use crate::ui::menu::buttons::DiscordButton;
+use crate::ui::screen::Screen;
+
 pub mod discord;
 mod buttons;
 
@@ -49,6 +51,8 @@ pub fn render_menu_bar(ctx: &Context, state: &mut App) {
                  };
 
                  state.gvas_file = Some(gvas);
+
+                 state.set_screen(Screen::Party);
 
              }
          })
