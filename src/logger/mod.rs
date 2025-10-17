@@ -134,7 +134,7 @@ impl Logger {
 
 
     /// Send a non-blocking log message
-    pub fn log(level: LogLevel, message: impl Into<String>) {
+    pub fn log_once(level: LogLevel, message: impl Into<String>) {
 
         let msg = message.into();
 
@@ -160,6 +160,21 @@ impl Logger {
             }
         }
     }
+
+    pub fn log(level: LogLevel, message: impl Into<String>) {
+        if let Some(mtx) = Self::sender() {
+            if let Ok(sender) = mtx.lock() {
+                let string: String = message.into().clone();
+                println!("{:?} > {}", level, string);
+                let _ = sender.send(LogMessage {
+                    level,
+                    content: string,
+                });
+            }
+        }
+    }
+
+    pub fn info_once(msg: impl Into<String>) { Self::log_once(LogLevel::Info, msg); }
 
     pub fn info(msg: impl Into<String>) { Self::log(LogLevel::Info, msg); }
     pub fn warn(msg: impl Into<String>) { Self::log(LogLevel::Warn, msg); }

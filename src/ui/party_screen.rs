@@ -11,7 +11,8 @@ use crate::save::pokemon::{SelectedMon, StorageType};
 use crate::save::pokemon::pokemon_classes::{class_at, parse_class};
 use crate::save::pokemon::shiny_list::get_shiny_list;
 use crate::ui::render_image;
-use crate::ui::screen::{render_pokemon_path, ScreenTrait};
+use crate::ui::screen::{render_pokemon_path, Screen, ScreenAction, ScreenTrait};
+use crate::ui::single_screen::SingleScreen;
 
 #[derive(Default)]
 pub struct PartyScreen {
@@ -47,7 +48,7 @@ impl ScreenTrait for PartyScreen {
                 Vec::new()
             }
             Some(n) => {
-                Logger::info(n.join(", "));
+                Logger::info_once(n.join(", "));
                 n
             }
         };
@@ -65,12 +66,14 @@ impl ScreenTrait for PartyScreen {
 
     }
 
-    fn ui(&mut self, ui: &mut Ui) {
+    fn ui(&mut self, ui: &mut Ui) -> ScreenAction {
+        let mut action: ScreenAction = ScreenAction::None;
+
         egui::Grid::new("party-grid").show(ui, |ui| {
             for container in self.containers.iter() {
                 let res = ui.add(render_image(container.path.clone())).interact(Sense::click());
                 if res.clicked() {
-                    Logger::info(format!("{} Clicked!", container.name));
+                    Logger::info_once(format!("{} Clicked!", container.name));
                     ui.ctx().data_mut(|map| {
                         let state = map.get_persisted_mut_or_default::<Option<SelectedMon>>(Id::new("selected_mon"));
                         if let Some(selected) = state {
@@ -80,7 +83,8 @@ impl ScreenTrait for PartyScreen {
                             };
                         }
                     });
-                    Logger::info("Set selected mon")
+                    Logger::info_once("Set selected mon");
+                    action = ScreenAction::ChangeTo(Screen::Single)
                 }
 
                 if res.hovered() {
@@ -88,6 +92,7 @@ impl ScreenTrait for PartyScreen {
                 }
             }
         });
+        action
     }
 }
 

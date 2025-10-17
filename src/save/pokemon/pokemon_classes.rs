@@ -49,8 +49,24 @@ pub fn parse_class(class: &str) -> Option<String> {
 }
 
 
-pub struct PokemonClasses;
+pub struct PokemonClasses<'a> {
+    property: &'a Property
+}
 
-impl PokemonClasses {
+impl<'a> PokemonClasses<'a> {
+    pub fn new_party(gvas_file: &'a GvasFile) -> Option<Self> {
+        let property = gvas_file.properties.get("PartyPokemonClasses")?;
+        Some(Self { property })
+    }
 
+    pub fn class_at(&self, idx: usize) -> Option<&String> {
+        let arr = self.property.get_array()?;
+        let class = class_at(arr, idx);
+
+        class
+    }
+
+    pub fn parse_class(&self, class: &str) -> Option<String> {
+        parse_class(class)
+    }
 }

@@ -1,3 +1,4 @@
+use gvas::GvasFile;
 use gvas::properties::array_property::ArrayProperty;
 use gvas::properties::int_property::BytePropertyValue;
 use gvas::properties::Property;
@@ -5,7 +6,7 @@ use gvas::properties::struct_property::{StructProperty};
 use gvas::properties::text_property::FTextHistory;
 use crate::pkmn::stats::Stats;
 use crate::property::traits::{NamespacedValue, PropertyPath, StartsWith};
-use crate::utils::custom_struct::CustomStruct;
+use crate::utils::custom_struct::{get_struct_at_idx, get_struct_property_at_idx, CustomStruct};
 
 pub fn get_is_fainted(struct_property: &StructProperty) -> Option<bool> {
 
@@ -110,16 +111,22 @@ pub fn get_nature_string(properties: &StructProperty) -> Option<&String> {
 
 pub struct PokemonInfo<'a> {
     /// The actual property containing isFainted, IVs, name, etc.
-    custom_struct: Option<CustomStruct<'a>>
+    property: &'a Property,
 }
 
 impl<'a> PokemonInfo<'a> {
     /// Todo: turn this into a trait
-    pub fn from_struct(property: &'a StructProperty) -> Self {
-        Self {
-            custom_struct: property.value.get_custom_struct() }
+    pub fn new_party(gvas_file: &'a GvasFile) -> Option<Self> {
+        let prop = gvas_file.properties.get("PartyPokemonInfo")?;
+        Some(Self {
+            property: prop
+        })
     }
 
+    pub fn get_name(&self, index: usize) -> Option<&String> {
+        let struct_at = get_struct_property_at_idx(self.property, index)?;
 
+        get_name(struct_at)
+    }
 }
 

@@ -56,6 +56,8 @@ impl App {
                 },
                 single_screen: SingleScreen {
                     selected_mon: None,
+                    counter: 0,
+                    should_refresh: true,
                     mon_data: None
                 },
             }
@@ -102,11 +104,11 @@ impl App {
             Screen::Boxes => {}
             Screen::Settings => {}
             Screen::Single => {
-
+                self.screens.single_screen.load(gvas);
             }
         };
 
-        Logger::info("Load call success")
+        Logger::info_once("Load call success")
     }
 }
 
