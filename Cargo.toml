@@ -13,9 +13,18 @@ chrono = { version = "0.4", features = ["clock"] }
 gvas = { version = "0.10.0", features = ["serde"] }
 indexmap = "2.11.3"
 eframe = "0.33.0"
+winit = "0.30.12"
+wgpu = "27.0.1"
+
+pollster = "0.4.0"
+
 egui = { version =  "0.33.0" }
 egui_extras = { version = "0.33.0", features = ["all_loaders"]}
+egui-wgpu = "0.33.0"
+egui-winit = "0.33.0"
+
 rfd = { version = "0.15.4" }
+image = "0.25.8"
 
 [dev-dependencies]
 ordered-float = { version = "4.6.0"}
