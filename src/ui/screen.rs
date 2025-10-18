@@ -1,6 +1,6 @@
 use egui::{include_image, CentralPanel, Color32, Context, Frame, Id, Image, ImageSource, Rgba, Rounding, Stroke, TextureOptions, Ui, Vec2};
 use gvas::GvasFile;
-use crate::app::App;
+use crate::app::LegacyApp;
 use crate::logger::Logger;
 use crate::ui::party_screen::PartyScreen;
 use crate::ui::screen;
@@ -74,7 +74,7 @@ pub fn render_pokemon_path<'a>(name: String, is_shiny: bool) -> String {
         name
     )
 }
-pub fn render_screen(app_state: &mut App, ctx: &egui::Context) {
+pub fn render_screen(app_state: &mut LegacyApp, ctx: &egui::Context) {
     CentralPanel::default().show(ctx, |ui| {
         let action = match &mut app_state.screen {
             Screen::Party => app_state.screens.party_screen.ui(ui),
@@ -87,7 +87,7 @@ pub fn render_screen(app_state: &mut App, ctx: &egui::Context) {
 
 }
 
-fn handle_screen_action(app_state: &mut App, action: ScreenAction) {
+fn handle_screen_action(app_state: &mut LegacyApp, action: ScreenAction) {
     if let ScreenAction::ChangeTo(next) = action {
         Logger::info_once(format!("Changing screen to: {}", next.as_str()));
         app_state.screen = next;

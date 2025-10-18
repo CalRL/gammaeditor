@@ -5,7 +5,7 @@ use egui::Context;
 use gvas::error::Error;
 use gvas::game_version::GameVersion;
 use gvas::GvasFile;
-use crate::app::App;
+use crate::app::LegacyApp;
 use crate::ui::menu::buttons::DiscordButton;
 use crate::ui::screen::Screen;
 
@@ -20,7 +20,7 @@ pub trait MenuButton {
 
 }
 
-pub fn render_menu_bar(ctx: &Context, state: &mut App) {
+pub fn render_menu_bar(ctx: &Context, state: &mut LegacyApp) {
     egui::TopBottomPanel::top("menu_bar").show(ctx, |ui| {
       menu::MenuBar::new().ui(ui, |ui| {
          ui.menu_button("File", |ui| {

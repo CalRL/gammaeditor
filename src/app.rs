@@ -13,7 +13,7 @@ use crate::ui::single_screen::SingleScreen;
 use crate::ui::screen::{render_screen, Screen, ScreenState};
 use crate::ui::screen::Screen::Party;
 
-pub struct App {
+pub struct LegacyApp {
     pub gvas_file: Option<GvasFile>,
     pub screen: Screen,
     pub selected_mon: Option<SelectedMon>,
@@ -26,7 +26,7 @@ pub struct Screens {
     pub single_screen: SingleScreen
 }
 
-impl App {
+impl LegacyApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
 
         let logger = match Logger::init() {
@@ -112,7 +112,7 @@ impl App {
     }
 }
 
-impl eframe::App for App {
+impl eframe::App for LegacyApp {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         ctx.data_mut(|map| {
             map.insert_persisted(
@@ -129,7 +129,7 @@ impl eframe::App for App {
     }
 }
 
-fn render_navigation_bar(app: &mut App, ctx: &egui::Context) {
+fn render_navigation_bar(app: &mut LegacyApp, ctx: &egui::Context) {
     egui::TopBottomPanel::new(TopBottomSide::Top, "navbar").show(ctx, |ui| {
         ui.horizontal_centered(|ui| {
             for screen in [

@@ -5,7 +5,7 @@ use egui::{ColorImage, CursorIcon, Id, Image, Sense, TextBuffer, TextureId, Ui};
 use gvas::GvasFile;
 use gvas::properties::Property;
 use rfd::MessageDialogResult::No;
-use crate::app::App;
+use crate::app::LegacyApp;
 use crate::logger::Logger;
 use crate::save::pokemon::{SelectedMon, StorageType};
 use crate::save::pokemon::pokemon_classes::{class_at, parse_class};
