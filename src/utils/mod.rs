@@ -1,6 +1,7 @@
 use rfd::{MessageDialog, MessageLevel};
 
 pub mod custom_struct;
+mod egui_tools;
 
 pub fn fatal_error_dialog(error: String) -> MessageDialog {
     rfd::MessageDialog::new()

@@ -15,7 +15,7 @@ indexmap = "2.11.3"
 eframe = "0.33.0"
 winit = "0.30.12"
 wgpu = "27.0.1"
-
+env_logger = "0.11.8"
 pollster = "0.4.0"
 
 egui = { version =  "0.33.0" }
