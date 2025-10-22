@@ -52,7 +52,7 @@ pub fn render_menu_bar(ctx: &Context, state: &mut LegacyApp) {
 
                  state.gvas_file = Some(gvas);
 
-                 state.set_screen(Screen::Party);
+                 // state.set_screen(Screen::Party);
 
              }
          })

@@ -7,4 +7,5 @@ pub mod macros;
 pub mod ui;
 pub mod file;
 pub mod app;
+pub mod egui_tools;
 

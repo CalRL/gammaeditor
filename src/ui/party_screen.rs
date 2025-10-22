@@ -1,6 +1,3 @@
-use eframe::emath::Vec2;
-use eframe::epaint::{Rgba, TextureHandle};
-use eframe::epaint::textures::TextureOptions;
 use egui::{ColorImage, CursorIcon, Id, Image, Sense, TextBuffer, TextureId, Ui};
 use gvas::GvasFile;
 use gvas::properties::Property;
