@@ -1,0 +1,22 @@
+[package]
+name = "gammaeditor"
+version = "0.1.0"
+description = "A PkHex esque app for Gamma Engine games"
+authors = ["CalRL"]
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+chrono = { version = "0.4", features = ["clock"] }
+gvas = { version = "0.10.0", features = ["serde"] }
+indexmap = "2.11.3"
+eframe = "0.33.0"
+egui = { version =  "0.33.0" }
+egui_extras = { version = "0.33.0", features = ["all_loaders"]}
+rfd = { version = "0.15.4" }
+
+[dev-dependencies]
+ordered-float = { version = "4.6.0"}
+
