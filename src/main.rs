@@ -3,6 +3,7 @@ use eframe::NativeOptions;
 use gammaeditor::app::App;
 use gammaeditor::logger::Logger;
 
+
 fn main() {
     Logger::init().unwrap();
 

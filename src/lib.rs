@@ -1,3 +1,5 @@
+extern crate core;
+
 pub mod save;
 pub mod pkmn;
 pub mod property;

@@ -10,7 +10,7 @@ use gammaeditor::property::traits::PropertyPath;
 #[test]
 fn test_get_starts_with_gets_level() {
     // real file bundled in repo
-    let mut f = File::open("tests/resource/Slot1.sav").expect("open sav");
+    let mut f = File::open("Slot1.sav").expect("open sav");
     let gvas = GvasFile::read(&mut f, GameVersion::Default).expect("read gvas");
 
     let party = gvas.properties
@@ -47,7 +47,7 @@ fn test_get_starts_with_gets_level() {
 }
 
 fn get_vec() -> Option<Vec<StructProperty>> {
-    let mut f = File::open("tests/resource/Slot1.sav").expect("open sav");
+    let mut f = File::open("Slot1.sav").expect("open sav");
     let gvas = GvasFile::read(&mut f, GameVersion::Default).expect("read gvas");
 
     let party = gvas.properties

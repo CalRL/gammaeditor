@@ -1,30 +1,34 @@
-use std::ops::Deref;
-use eframe::emath::Align;
 use crate::ui::screen::ScreenTrait;
-use egui::{CursorIcon, Id, Label, Sense};
+use eframe::emath::Align;
 use egui::panel::TopBottomSide;
+use egui::{CursorIcon, Direction, Id, Label, Layout, RichText, Sense};
+use std::fs::File;
+use std::io::{Cursor, Write};
+use std::sync::{Arc, OnceLock, RwLock,  RwLockReadGuard};
+use crate::logger::Logger;
+use crate::save::pokemon::SelectedMon;
+use crate::ui::menu::render_menu_bar;
+use crate::ui::screen::party_screen::PartyScreen;
+use crate::ui::screen::home_screen::HomeScreen;
+use crate::ui::screen::{render_screen, Screen, };
+use crate::ui::screen::single_screen::SingleScreen;
 use gvas::GvasFile;
 use rfd::MessageLevel;
-use crate::logger::{Logger};
-use crate::save::pokemon::{SelectedMon};
-use crate::ui::menu::render_menu_bar;
-use crate::ui::party_screen::PartyScreen;
-use crate::ui::single_screen::SingleScreen;
-use crate::ui::screen::{render_screen, Screen, ScreenState};
-use crate::ui::screen::Screen::Party;
 
+pub static GVAS_FILE: OnceLock<Arc<RwLock<GvasFile>>> = OnceLock::<Arc<RwLock<GvasFile>>>::new();
+
+#[derive(Clone)]
 pub struct App {
-    pub gvas_file: Option<GvasFile>,
+    pub gvas_file: Option<Arc<RwLock<GvasFile>>>,
     pub screen: Screen,
     pub selected_mon: Option<SelectedMon>,
-    pub screen_state: ScreenState,
-    pub screens: Screens
 }
 
 pub struct Screens {
     pub party_screen: PartyScreen,
     pub single_screen: SingleScreen
 }
+
 
 impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
@@ -47,37 +51,52 @@ impl App {
 
         Self {
             gvas_file: None,
-            screen: Screen::Party,
+            screen: Screen::Home(HomeScreen),
             selected_mon: None,
-            screen_state: ScreenState::Empty(),
-            screens: Screens {
-                party_screen: PartyScreen {
-                    containers: vec![],
-                },
-                single_screen: SingleScreen {
-                    selected_mon: None,
-                    counter: 0,
-                    should_refresh: true,
-                    mon_data: None
-                },
+        }
+    }
+
+    pub fn save_to() -> Result<(), String> {
+        let Some(cell) = GVAS_FILE.get() else {
+            return Err("GVAS_FILE not initialized".into());
+        };
+
+        let gvas: RwLockReadGuard<GvasFile> = cell.read().map_err(|e| e.to_string())?;
+
+        let mut writer: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+        gvas.write(&mut writer).map_err(|e| e.to_string())?;
+
+        let Some(path) = rfd::FileDialog::new()
+            .set_title("Save GVAS File As")
+            .add_filter("GVAS Save", &["sav", "gvas"])
+            .save_file()
+        else {
+            return Err("Save cancelled".into());
+        };
+
+        let mut file = File::create(&path).map_err(|e| e.to_string())?;
+        file.write_all(&writer.into_inner()).map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    pub fn load_save(&mut self, gvas_file: GvasFile) -> Result<(), String> {
+        let guard: Arc<RwLock<GvasFile>> = Arc::new(RwLock::new(gvas_file));
+        self.gvas_file = Some(guard.clone());
+        let res = GVAS_FILE.set(guard);
+
+        match res {
+            Ok(_) => { Ok(()) }
+            Err(e) => {
+                let msg = "Failed to load save (is it already loaded?)";
+                Logger::error(msg.clone());
+
+                Err(msg.to_string())
             }
         }
     }
 
-    fn load_save(&mut self, gvas_file: GvasFile) -> Result<(), String> {
-        self.gvas_file = Some(gvas_file);
-
-        match self.gvas_file {
-            None => {
-                Err("Failed to load gvas_file".to_string())
-            }
-            Some(_) => {
-                Ok(())
-            }
-        }
-    }
-
-    fn is_save_loaded(&self) -> bool {
+    pub(crate) fn is_save_loaded(&self) -> bool {
         match &self.gvas_file {
             None => {
                 false
@@ -87,28 +106,35 @@ impl App {
             }
         }
     }
-
-    pub fn set_screen(&mut self, new_screen: Screen) {
-        self.screen = new_screen;
-
-        let gvas = match &self.gvas_file {
-            None => {return}
-            Some(gvas) => {gvas}
-        };
-
-        match self.screen {
-            Screen::Party => {
-                self.screens.party_screen.load(gvas);
-
+    pub fn load_screen(&mut self, next: Screen) -> Result<Screen, String> {
+        let screen = match next {
+            Screen::Party(mut s) => {
+                s.load(self);
+                Screen::Party(s)
             }
-            Screen::Boxes => {}
-            Screen::Settings => {}
-            Screen::Single => {
-                self.screens.single_screen.load(gvas);
+            Screen::Single(mut s) => {
+                s.load(self);
+                Screen::Single(s)
+            }
+            Screen::Home(mut s) => {
+                s.load(self);
+                Screen::Home(s)
             }
         };
 
-        Logger::info_once("Load call success")
+        Logger::info(format!("Loaded screen: {}", screen.clone().as_str()));
+
+        Ok(screen)
+    }
+    pub fn set_screen(&mut self, next: Screen) {
+        Logger::info("Setting screen inside app");
+        self.screen = match self.load_screen(next) {
+            Ok(s) => {s}
+            Err(_) => {
+                Logger::error("Failed to set screen...");
+                return;
+            }
+        }
     }
 }
 
@@ -122,10 +148,7 @@ impl eframe::App for App {
         });
         render_menu_bar(ctx, self);
         render_navigation_bar(self, ctx);
-
-        if self.is_save_loaded() {
-            render_screen(self, ctx);
-        }
+        render_screen(self, ctx);
     }
 }
 
@@ -133,11 +156,14 @@ fn render_navigation_bar(app: &mut App, ctx: &egui::Context) {
     egui::TopBottomPanel::new(TopBottomSide::Top, "navbar").show(ctx, |ui| {
         ui.horizontal_centered(|ui| {
             for screen in [
-                Screen::Party,
+                Screen::Home(HomeScreen),
+                Screen::Party(PartyScreen { loaded: false, containers: vec![] }),
             ] {
-                let label = screen.as_str();
+                let text: RichText = RichText::new(screen.as_str()).size(18.0);
 
-                let response = ui.add(Label::new(label).halign(Align::Center).sense(Sense::click()));
+                let response = ui.add(
+                    Label::new(text).sense(Sense::click())
+                );
 
                 if response.hovered() {
                     ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
@@ -146,8 +172,9 @@ fn render_navigation_bar(app: &mut App, ctx: &egui::Context) {
                 if response.clicked() {
                     app.set_screen(screen);
                 }
-            }
-        })
 
+                ui.add_space(20.0);
+            }
+        });
     });
 }

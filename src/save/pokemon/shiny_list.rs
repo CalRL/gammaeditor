@@ -1,8 +1,8 @@
-use gvas::GvasFile;
+use crate::utils::custom_struct::get_struct_property_at_idx_mut;
 use gvas::properties::array_property::ArrayProperty;
+use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
 use gvas::properties::Property;
-use rfd::MessageDialogResult::No;
-use crate::save::pokemon::StorageType;
+use gvas::GvasFile;
 
 pub fn get_shiny_list(array: &ArrayProperty) -> Option<&Vec<bool>>{
     match array {
@@ -75,5 +75,35 @@ impl<'a> ShinyList<'a> {
 
     pub fn get_shiny_at(&self, index: usize) -> Option<&bool> {
         get_shiny_at(self.get_array()?, index)
+    }
+}
+
+pub struct ShinyListMut<'a> {
+    property: &'a mut Property
+}
+
+impl<'a> ShinyListMut<'a> {
+    pub fn new_party(gvas_file: &'a mut GvasFile) -> Option<Self> {
+        let property: &mut Property = match gvas_file.properties.get_mut("PartyShinyList") {
+            None => {return None;}
+            Some(p) => {p}
+        };
+        Some(Self {
+             property
+        })
+    }
+
+    pub fn set_shiny_at(&mut self, index: usize, value: bool) -> Result<(), String> {
+        match self.property {
+            Property::ArrayProperty(array) => {
+                if let Some(shiny) = get_shiny_at_mut(array, index) {
+                    *shiny = value;
+                    Ok(())
+                } else {
+                    Err(format!("Failed to set shiny at index {} (does it exist?)", index))
+                }
+            }
+            _ => { Err(format!("Failed to set shiny at index {}", index)) }
+        }
     }
 }

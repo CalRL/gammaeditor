@@ -7,7 +7,6 @@ pub fn moves_array(property: &Property) -> Option<&ArrayProperty> {
     property.get_array()
 }
 
-
 /// Returns moves index at
 /// Takes moves_array result
 pub fn moves_at(array: &ArrayProperty, index: usize) -> Option<&ArrayProperty> {
@@ -57,4 +56,5 @@ pub fn current_pp_at(moves: &ArrayProperty, index: usize) -> Option<&i32> {
     Some(&prop.get_int()?.value)
 }
 pub struct PPMovesLists;
+
 

@@ -7,11 +7,19 @@ use gvas::properties::Property;
 use ordered_float::OrderedFloat;
 
 pub fn get_gvas<'a>() -> GvasFile {
-    let mut file = File::open("tests/resource/Slot1.sav").expect("save file not found");
+    let mut file = File::open("Slot1.sav").expect("save file not found");
     let gvas = GvasFile::read(&mut file, GameVersion::Default).expect("failed to parse");
 
     gvas.clone()
 }
+
+pub fn get_gvas_mut<'a>() -> GvasFile {
+    let mut file = File::open("Slot1.sav").expect("save file not found");
+    let mut gvas = GvasFile::read(&mut file, GameVersion::Default).expect("failed to parse");
+
+    gvas.clone()
+}
+
 
 fn make_bool_property(value: bool) -> Property {
     Property::BoolProperty(BoolProperty { value })

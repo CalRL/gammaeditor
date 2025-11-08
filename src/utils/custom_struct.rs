@@ -58,6 +58,23 @@ pub fn get_struct_property_at_idx(property: &Property, idx: usize) -> Option<&St
     }
 }
 
+// TODO: test this
+pub fn get_struct_property_at_idx_mut(property: &mut Property, idx: usize) -> Option<&mut StructProperty> {
+    let array = match property {
+        Property::ArrayProperty(prop) => {
+            prop
+        }
+        _ => return None
+    };
+
+    match array {
+        ArrayProperty::Structs { structs, .. } => {
+            structs.get_mut(idx)
+        }
+        _ => None
+    }
+}
+
 pub fn get_struct_at_idx(property: &Property, idx: usize) -> Option<&Property> {
     todo!()
 }

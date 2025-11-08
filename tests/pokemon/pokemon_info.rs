@@ -7,7 +7,9 @@ use gammaeditor::pkmn;
 use gammaeditor::pkmn::stats::Stats;
 use gammaeditor::property::traits::StartsWith;
 use gammaeditor::save::pokemon::pokemon_info;
+use gammaeditor::save::pokemon::pokemon_info::{PokemonInfo, PokemonInfoMut};
 use gammaeditor::utils::custom_struct::get_struct_property_at_idx;
+use crate::pokemon::common::get_gvas_mut;
 use crate::pokemon::pokemon_classes::common::get_gvas;
 
 #[test]
@@ -262,4 +264,23 @@ fn get_level() {
     let level = pokemon_info::get_level(poke_struct).expect("get level");
     let expected = 48;
     assert_eq!(level, expected)
+}
+
+#[test]
+fn set_stat() {
+    let mut gvas = get_gvas_mut();
+    {
+        let party_reader = PokemonInfo::new_party(&gvas).unwrap();
+        let first_stat = party_reader.get_stat(0, Stats::ATK).expect("get stat");
+        println!("{:?}", first_stat);
+        // random number, a pokemon will NEVER have this many of any stat regardless.
+        assert_ne!(9584329854328.0, first_stat);
+    }
+
+    let mut party = PokemonInfoMut::new_party(&mut gvas).unwrap();
+    party.set_stat(0, Stats::ATK, 100f64);
+
+    let party_reader = PokemonInfo::new_party(&gvas).unwrap();
+    let stat = party_reader.get_stat(0, Stats::ATK).expect("get stat");
+    assert_eq!(100.0, stat);
 }
