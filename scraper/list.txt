@@ -200,5 +200,5 @@ Groudon
 Rayquaza
 Jirachi
 Deoxys
-Dragonite
-Shaymin
+sword-shield/Dragonite
+black-white/Shaymin
