@@ -200,3 +200,5 @@ Groudon
 Rayquaza
 Jirachi
 Deoxys
+sword-shield/Dragonite
+black-white/Shaymin
