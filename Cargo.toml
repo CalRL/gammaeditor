@@ -19,4 +19,8 @@ rfd = { version = "0.15.4" }
 
 [dev-dependencies]
 ordered-float = { version = "4.6.0"}
+criterion = "0.7.0"
 
+[[bench]]
+name = "gvas_read"
+harness = false
