@@ -5,6 +5,7 @@ use std::cell::OnceCell;
 use std::sync::{Arc, RwLock};
 
 pub mod custom_struct;
+pub mod generator;
 
 pub fn get_data_persisted<T>(context: &Context, key: String) -> Option<T>
 where
