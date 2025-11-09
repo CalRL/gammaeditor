@@ -7,13 +7,15 @@ use crate::save::pokemon::pokemon_info::{InfoStruct, PokemonInfo, PokemonInfoMut
 use crate::save::pokemon::shiny_list::{ShinyList, ShinyListMut};
 use crate::ui::screen::{get_images_path, render_pokemon_path, Reload, ScreenAction, ScreenTrait};
 use crate::{try_gvas_read, try_gvas_write, unwrap_gvas};
-use egui::{Button, Image, Response, Sense, TextEdit, Ui};
+use egui::{Button, Image, Response, RichText, Sense, TextEdit, Ui};
 use egui_extras::{Column, TableBuilder, TableRow};
 use gvas::GvasFile;
 use std::collections::HashMap;
 use std::sync::RwLockWriteGuard;
 use eframe::emath::Vec2;
 use eframe::epaint::Color32;
+use rfd::MessageDialogResult::No;
+use crate::save::pokemon::pokemon_classes::{parse_class, PokemonClasses};
 use crate::save::pokemon::StorageType;
 use crate::ui::image::ImageContainer;
 use crate::ui::render_image_container;
@@ -34,6 +36,7 @@ pub struct Buffer {
 #[derive(Clone, Debug)]
 pub struct SingleMon {
     index: usize,
+    class: String,
     storage_type: StorageType,
     is_shiny: bool,
     name: String,
@@ -364,10 +367,21 @@ impl ScreenTrait for SingleScreen {
                 }
             }
         };
+        let class = match PokemonClasses::new_party(gvas_file) {
+            None => {return;}
+            Some(party) => {
+                if let Some(c) = party.class_at(idx.clone()) {
+                    c.clone()
+                } else {
+                    return;
+                }
+            }
+        };
 
         self.mon_data = Some(SingleMon {
             index: idx,
             storage_type: StorageType::PARTY,
+            class,
             is_shiny,
             name: name.clone(),
             stats,
@@ -382,14 +396,15 @@ impl ScreenTrait for SingleScreen {
             self.load(app);
         }
         if let Some(data) = &self.mon_data {
-            let action = ui.horizontal(|ui| {
-                ui.add(render_image_container(&ImageContainer::new_party(data.name.clone(), data.is_shiny.clone(), data.index.clone())));
+            let shiny = ui.horizontal(|ui| {
+                let parsed_class = parse_class(data.class.clone().as_str()).unwrap();
+                ui.add(render_image_container(&ImageContainer::new_party(parsed_class, data.is_shiny.clone(), data.index.clone())));
                 fn flip_shiny(mut guard: RwLockWriteGuard<GvasFile>, data: &SingleMon) -> ScreenAction {
                     let gvas = &mut *guard;
                     if let Some(mut list) = ShinyListMut::new_party(gvas) {
                         match list.set_shiny_at(data.index, !data.is_shiny) {
                             Ok(_) => {
-                                Logger::info(format!("Shiny toggle success!"));
+                                Logger::info("Shiny toggle success!".to_string());
                                 return ScreenAction::Reload;
                             }
                             Err(e) => {Logger::info(format!("Failed to set shiny at: {}", e));}
@@ -419,7 +434,7 @@ impl ScreenTrait for SingleScreen {
                         .sense(Sense::click()));
 
                     if res.clicked() {
-                        Logger::info(format!("Shiny toggle clicked!"));
+                        Logger::info("Shiny toggle clicked!".to_string());
                         let guard = match try_gvas_write!(GVAS_FILE) {
                             None => {return ScreenAction::None;}
                             Some(g) => {g}
@@ -429,9 +444,25 @@ impl ScreenTrait for SingleScreen {
                 }
                 ScreenAction::None
             });
-            if let ScreenAction::Reload = action.inner {
+            if let ScreenAction::Reload = shiny.inner {
                 self.loaded = false;
                 return ScreenAction::Reload;
+            }
+            ui.label("Name");
+            let mut display: String = data.name.clone();
+            let res: Response = ui.add(TextEdit::singleline(&mut display).desired_width(200.0));
+            if res.changed() {
+                let mut guard = match try_gvas_write!(GVAS_FILE) {
+                    None => { return ScreenAction::None;}
+                    Some(g) => {g}
+                };
+                match PokemonInfoMut::new_party(&mut *guard) {
+                    None => { return ScreenAction::None; }
+                    Some(mut party) => {
+                        party.set_name(data.index.clone(), display);
+                        return ScreenAction::Reload;
+                    }
+                };
             }
         }
 
