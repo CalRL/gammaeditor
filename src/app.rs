@@ -12,8 +12,10 @@ use crate::ui::screen::party_screen::PartyScreen;
 use crate::ui::screen::home_screen::HomeScreen;
 use crate::ui::screen::{render_screen, Screen, };
 use crate::ui::screen::single_screen::SingleScreen;
+use crate::ui::image::ImageCache;
 use gvas::GvasFile;
 use rfd::MessageLevel;
+use rust_embed::Embed;
 
 pub static GVAS_FILE: OnceLock<Arc<RwLock<GvasFile>>> = OnceLock::<Arc<RwLock<GvasFile>>>::new();
 
@@ -22,6 +24,7 @@ pub struct App {
     pub gvas_file: Option<Arc<RwLock<GvasFile>>>,
     pub screen: Screen,
     pub selected_mon: Option<SelectedMon>,
+    pub image_cache: ImageCache
 }
 
 pub struct Screens {
@@ -48,11 +51,19 @@ impl App {
                 panic!()
             }
         };
-
+        Logger::info("Loading image cache");
+        let start = chrono::Local::now().timestamp_millis();
+        let mut cache = ImageCache::new();
+        for path in Asset::iter() {
+            cache.get(&cc.egui_ctx, &path);
+        }
+        let end = chrono::Local::now().timestamp_millis();
+        Logger::info(format!("Image cache loaded in: {} ms", end - start));
         Self {
             gvas_file: None,
             screen: Screen::Home(HomeScreen),
             selected_mon: None,
+            image_cache: cache
         }
     }
 
@@ -137,6 +148,10 @@ impl App {
         }
     }
 }
+
+#[derive(Embed)]
+#[folder = "images/"]
+pub struct Asset;
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
