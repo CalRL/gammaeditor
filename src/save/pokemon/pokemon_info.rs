@@ -155,6 +155,19 @@ pub fn get_name(properties: &StructProperty) -> Option<&String> {
     source_string
 }
 
+pub fn get_name_mut(properties: &mut StructProperty) -> Option<&mut String> {
+    let vec = properties.get_starts_with_mut("Name")?;
+    let name_prop = vec.first_mut()?;
+
+    if let Property::TextProperty(text) = name_prop {
+        if let FTextHistory::Base { source_string: Some(ref mut s), .. } = &mut text.value.history {
+            return Some(s);
+        }
+    }
+
+    None
+}
+
 /// Returns a namespaced string
 pub fn get_nature<'a>(properties: &StructProperty) -> Option<&String> {
     let vec = properties.get_starts_with("Nature")?;
@@ -249,6 +262,14 @@ impl<'a> PokemonInfoMut<'a> {
         if let Some(s) = get_struct_at_idx_mut(self.property, index) {
             if let Some(stat_ref) = get_stat_mut(s, stat) {
                 *stat_ref = value;
+            }
+        }
+    }
+
+    pub fn set_name(&mut self, index: usize, name: String) {
+        if let Some(s) = get_struct_at_idx_mut(self.property, index) {
+            if let Some(name_ref) = get_name_mut(s) {
+                *name_ref = name;
             }
         }
     }

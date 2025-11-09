@@ -284,3 +284,21 @@ fn set_stat() {
     let stat = party_reader.get_stat(0, Stats::ATK).expect("get stat");
     assert_eq!(100.0, stat);
 }
+
+#[test]
+fn set_name() {
+    let mut gvas = get_gvas_mut();
+    {
+        let party_reader = PokemonInfo::new_party(&gvas).unwrap();
+        let first_name = party_reader.get_name(0).expect("get stat");
+        println!("{:?}", first_name);
+        assert_ne!("thisshoudlntbearandomname", first_name);
+    }
+
+    let mut party = PokemonInfoMut::new_party(&mut gvas).unwrap();
+    party.set_name(0, "foo".to_string());
+    let party_reader = PokemonInfo::new_party(&gvas).unwrap();
+    let name = party_reader.get_name(0).expect("get name");
+
+    assert_eq!("foo", name);
+}
