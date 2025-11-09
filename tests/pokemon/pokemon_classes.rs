@@ -1,5 +1,5 @@
-use gammaeditor::save::pokemon::pokemon_classes::{class_at};
 use crate::pokemon::pokemon_classes::common::get_gvas;
+use gammaeditor::save::pokemon::pokemon_classes::class_at;
 
 #[path = "../common.rs"]
 pub(crate) mod common;

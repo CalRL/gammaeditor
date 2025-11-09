@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use crate::app::Asset;
 use crate::save::pokemon::StorageType;
 use crate::ui::screen::render_pokemon_path;
 use egui::{Color32, ColorImage, Context, TextureHandle, Vec2};
-use crate::app::Asset;
+use std::collections::HashMap;
 
 #[derive(Clone)]
 pub struct ImageContainer {
@@ -10,7 +10,7 @@ pub struct ImageContainer {
     pub storage_type: StorageType,
     pub index: usize,
     pub name: String,
-    pub is_shiny: bool
+    pub is_shiny: bool,
 }
 
 impl ImageContainer {
@@ -42,7 +42,7 @@ pub struct ImageCache {
 impl ImageCache {
     pub fn new() -> Self {
         Self {
-            map: HashMap::new()
+            map: HashMap::new(),
         }
     }
 

@@ -1,27 +1,25 @@
-use std::collections::HashMap;
-use std::fmt::format;
-use gvas::GvasFile;
-use gvas::properties::array_property::ArrayProperty;
-use gvas::properties::int_property::BytePropertyValue;
-use gvas::properties::Property;
-use gvas::properties::struct_property::{StructProperty};
-use gvas::properties::text_property::FTextHistory;
-use rfd::MessageDialogResult::No;
 use crate::logger::Logger;
 use crate::pkmn::stats::{StatStruct, Stats};
 use crate::property::traits::{NamespacedValue, PropertyPath, StartsWith};
-use crate::utils::custom_struct::{get_struct_at_idx, get_struct_at_idx_mut, get_struct_property_at_idx, CustomStruct};
+use crate::utils::custom_struct::{
+    get_struct_at_idx, get_struct_at_idx_mut, get_struct_property_at_idx, CustomStruct,
+};
+use gvas::properties::array_property::ArrayProperty;
+use gvas::properties::int_property::BytePropertyValue;
+use gvas::properties::struct_property::StructProperty;
+use gvas::properties::text_property::FTextHistory;
+use gvas::properties::Property;
+use gvas::GvasFile;
+use rfd::MessageDialogResult::No;
+use std::collections::HashMap;
+use std::fmt::format;
 
 pub fn get_is_fainted(struct_property: &StructProperty) -> Option<bool> {
-
     let is_fainted: &Vec<Property> = struct_property.get_starts_with("isFainted")?;
     let first: &Property = is_fainted.first()?;
     match first {
-
-        Property::BoolProperty(bool) => {
-            Some(bool.value)
-        }
-        _ => None
+        Property::BoolProperty(bool) => Some(bool.value),
+        _ => None,
     }
 }
 
@@ -71,10 +69,8 @@ pub fn get_stat(properties: &StructProperty, stat: Stats) -> Option<f64> {
     let stat_str: &str = stat.as_str();
     let stat_property = properties.get_starts_with(stat_str)?.first()?;
     match &stat_property {
-        Property::DoubleProperty(double) => {
-            Some(double.value.0)
-        }
-        _ => None
+        Property::DoubleProperty(double) => Some(double.value.0),
+        _ => None,
     }
 }
 
@@ -92,7 +88,6 @@ pub fn get_stat_mut(properties: &mut StructProperty, stat: Stats) -> Option<&mut
 
     val
 }
-
 
 pub fn get_stats(properties: &StructProperty) -> Option<StatStruct> {
     fn get_value(props: &StructProperty, stat: Stats) -> Option<f64> {
@@ -112,9 +107,7 @@ pub fn get_stats(properties: &StructProperty) -> Option<StatStruct> {
         map.insert(stat.clone(), get_value(properties, stat)?);
     }
 
-    Some(StatStruct {
-        values: map
-    })
+    Some(StatStruct { values: map })
 }
 
 pub fn get_level(properties: &StructProperty) -> Option<i32> {
@@ -122,10 +115,8 @@ pub fn get_level(properties: &StructProperty) -> Option<i32> {
     let level_prop = vec.first()?;
 
     match level_prop {
-        Property::IntProperty(int) => {
-            Some(int.value)
-        }
-        _ => None
+        Property::IntProperty(int) => Some(int.value),
+        _ => None,
     }
 }
 
@@ -134,22 +125,16 @@ pub fn get_name(properties: &StructProperty) -> Option<&String> {
     let name_prop = vec.first()?;
 
     let history = match name_prop {
-        Property::TextProperty(text) => {
-            Some(&text.value.history)
-        }
-        _ => None
+        Property::TextProperty(text) => Some(&text.value.history),
+        _ => None,
     }?;
 
     let source_string = match history {
-        FTextHistory::Base { source_string, .. } => {
-            match source_string {
-                None => None,
-                Some(str) => {
-                    Some(str)
-                }
-            }
-        }
-        _ => return None
+        FTextHistory::Base { source_string, .. } => match source_string {
+            None => None,
+            Some(str) => Some(str),
+        },
+        _ => return None,
     };
 
     source_string
@@ -160,7 +145,11 @@ pub fn get_name_mut(properties: &mut StructProperty) -> Option<&mut String> {
     let name_prop = vec.first_mut()?;
 
     if let Property::TextProperty(text) = name_prop {
-        if let FTextHistory::Base { source_string: Some(ref mut s), .. } = &mut text.value.history {
+        if let FTextHistory::Base {
+            source_string: Some(ref mut s),
+            ..
+        } = &mut text.value.history
+        {
             return Some(s);
         }
     }
@@ -175,14 +164,12 @@ pub fn get_nature<'a>(properties: &StructProperty) -> Option<&String> {
     match nature_prop {
         Property::ByteProperty(byte) => {
             let val = &byte.value;
-             match &val {
-                BytePropertyValue::Namespaced(namespace) => {
-                    Some(namespace)
-                }
-                _ => None
+            match &val {
+                BytePropertyValue::Namespaced(namespace) => Some(namespace),
+                _ => None,
             }
         }
-        _ => None
+        _ => None,
     }
 }
 
@@ -199,20 +186,16 @@ pub fn get_nature_string(properties: &StructProperty) -> Option<&String> {
     properties.get_namespaced_value("Nature")
 }
 
-
 pub struct PokemonInfo<'a> {
     /// The actual property containing isFainted, IVs, name, etc.
     property: &'a Property,
-
 }
 
 impl<'a> PokemonInfo<'a> {
     /// Todo: turn this into a trait
     pub fn new_party(gvas_file: &'a GvasFile) -> Option<Self> {
         let prop = gvas_file.properties.get("PartyPokemonInfo")?;
-        Some(Self {
-            property: prop
-        })
+        Some(Self { property: prop })
     }
 
     pub fn get_name(&self, index: usize) -> Option<&String> {
@@ -250,12 +233,9 @@ pub struct PokemonInfoMut<'a> {
 }
 
 impl<'a> PokemonInfoMut<'a> {
-
     pub fn new_party(gvas_file: &'a mut GvasFile) -> Option<Self> {
         let prop = gvas_file.properties.get_mut("PartyPokemonInfo")?;
-        Some(Self {
-            property: prop
-        })
+        Some(Self { property: prop })
     }
 
     pub fn set_stat(&mut self, index: usize, stat: Stats, value: f64) {
@@ -274,4 +254,3 @@ impl<'a> PokemonInfoMut<'a> {
         }
     }
 }
-

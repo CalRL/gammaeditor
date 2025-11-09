@@ -1,7 +1,7 @@
 // ENUM_Natures::NewEnumerator0 hardy
 // 1 lonely
 // 2 brave
-// 3 adamant   
+// 3 adamant
 // ENUM_Natures::NewEnumerator6 docile
 // ENUM_Natures::NewEnumerator7 relaxed
 // 8 impish
@@ -22,8 +22,8 @@
 // 23 careful
 // ENUM_Natures::NewEnumerator24 quirky
 
-use std::str::FromStr;
 use crate::pkmn::natures::Nature::{Adamant, Brave, Docile, Hardy, Lonely};
+use std::str::FromStr;
 
 /// Returns nature as a lowercase string
 pub fn get_nature_from_enum(enum_str: &str) -> Option<&str> {
@@ -55,35 +55,35 @@ pub fn get_nature_from_enum(enum_str: &str) -> Option<&str> {
         "ENUM_Natures::NewEnumerator24" => "quirky",
         _ => return None,
     };
-    
+
     Some(nature)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Nature {
-    Hardy,     // 0
-    Lonely,    // 1
-    Brave,     // 2
-    Adamant,   // 3
-    Docile,    // 6
-    Relaxed,   // 7
-    Impish,    // 8
-    Lax,       // 9
-    Timid,     // 10
-    Hasty,     // 11
-    Serious,   // 12
-    Jolly,     // 13
-    Naive,     // 14
-    Modest,    // 15
-    Mild,      // 16
-    Quiet,     // 17
-    Bashful,   // 18
-    Rash,      // 19
-    Calm,      // 20
-    Gentle,    // 21
-    Sassy,     // 22
-    Careful,   // 23
-    Quirky,    // 24
+    Hardy,   // 0
+    Lonely,  // 1
+    Brave,   // 2
+    Adamant, // 3
+    Docile,  // 6
+    Relaxed, // 7
+    Impish,  // 8
+    Lax,     // 9
+    Timid,   // 10
+    Hasty,   // 11
+    Serious, // 12
+    Jolly,   // 13
+    Naive,   // 14
+    Modest,  // 15
+    Mild,    // 16
+    Quiet,   // 17
+    Bashful, // 18
+    Rash,    // 19
+    Calm,    // 20
+    Gentle,  // 21
+    Sassy,   // 22
+    Careful, // 23
+    Quirky,  // 24
 }
 
 impl FromStr for Nature {
@@ -94,6 +94,4 @@ impl FromStr for Nature {
     }
 }
 
-pub enum NatureNamespace {
-
-}
+pub enum NatureNamespace {}

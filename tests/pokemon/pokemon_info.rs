@@ -1,28 +1,34 @@
-use gvas::GvasFile;
-use gvas::properties::int_property::{BoolProperty, ByteProperty, BytePropertyValue, DoubleProperty};
-use gvas::properties::Property;
-use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
-use ordered_float::OrderedFloat;
+use crate::pokemon::common::get_gvas_mut;
+use crate::pokemon::pokemon_classes::common::get_gvas;
 use gammaeditor::pkmn;
 use gammaeditor::pkmn::stats::Stats;
 use gammaeditor::property::traits::StartsWith;
 use gammaeditor::save::pokemon::pokemon_info;
 use gammaeditor::save::pokemon::pokemon_info::{PokemonInfo, PokemonInfoMut};
 use gammaeditor::utils::custom_struct::get_struct_property_at_idx;
-use crate::pokemon::common::get_gvas_mut;
-use crate::pokemon::pokemon_classes::common::get_gvas;
+use gvas::properties::int_property::{
+    BoolProperty, ByteProperty, BytePropertyValue, DoubleProperty,
+};
+use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
+use gvas::properties::Property;
+use gvas::GvasFile;
+use ordered_float::OrderedFloat;
 
 #[test]
 fn get_sturct_at_idx_gets() {
     let gvas = get_gvas();
-    let prop = gvas.properties.get("PartyPokemonInfo").expect("unwrap prop");
+    let prop = gvas
+        .properties
+        .get("PartyPokemonInfo")
+        .expect("unwrap prop");
     let cs = get_struct_property_at_idx(prop, 0).expect("unwrap struct");
     let is_fainted = cs.get_starts_with("isFainted").expect("get isfainted");
     let first = is_fainted.first().expect("get first");
     let val = match first {
         Property::BoolProperty(bool) => Some(bool.value),
-        _ => None
-    }.expect("unwrap bool");
+        _ => None,
+    }
+    .expect("unwrap bool");
     println!("{}", serde_json::to_string_pretty(&val).expect("unwrapp"));
 
     assert_eq!(val, false)
@@ -31,7 +37,10 @@ fn get_sturct_at_idx_gets() {
 #[test]
 fn get_struct_at_idx_gets() {
     let gvas = get_gvas();
-    let prop = gvas.properties.get("PartyPokemonInfo").expect("unwrap prop");
+    let prop = gvas
+        .properties
+        .get("PartyPokemonInfo")
+        .expect("unwrap prop");
     let cs = get_struct_property_at_idx(prop, 0).expect("unwrap struct");
     let expected = r#"
 {
@@ -137,7 +146,6 @@ fn get_struct_at_idx_gets() {
     assert_eq!(actual.trim(), expected.trim())
 }
 
-
 #[test]
 fn get_stat() {
     let gvas = get_gvas();
@@ -231,7 +239,6 @@ fn get_secondary_type() {
     let expected = "ENUM_PokemonTypePrimary::NewEnumerator15";
     assert_eq!(secondary, expected)
 }
-
 
 #[test]
 fn get_nature_string() {

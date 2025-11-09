@@ -1,17 +1,17 @@
-use std::ops::Deref;
 use crate::app::{App, GVAS_FILE};
 use crate::logger::Logger;
 use crate::save::pokemon::pokemon_classes::{class_at, parse_class};
 use crate::save::pokemon::shiny_list::get_shiny_list;
 use crate::save::pokemon::{SelectedMon, StorageType};
+use crate::ui::image::ImageContainer;
 use crate::ui::render_image;
-use crate::ui::screen::{render_pokemon_path, Screen, ScreenAction, ScreenTrait};
 use crate::ui::screen::single_screen::{SingleScreen, SingleScreenBuffer};
+use crate::ui::screen::{render_pokemon_path, Screen, ScreenAction, ScreenTrait};
 use crate::utils::set_data_persisted;
 use egui::{CursorIcon, Direction, Layout, Response, RichText, Sense, TextBuffer, Ui};
 use gvas::properties::Property;
 use gvas::GvasFile;
-use crate::ui::image::ImageContainer;
+use std::ops::Deref;
 
 #[derive(Clone)]
 pub struct PartyScreen {
@@ -24,7 +24,7 @@ impl ScreenTrait for PartyScreen {
         if self.loaded {
             return;
         }
-        
+
         let gvas_file: &GvasFile = match app.gvas_file.as_ref() {
             Some(file) => &file.read().unwrap().to_owned(),
             None => return,
@@ -40,7 +40,12 @@ impl ScreenTrait for PartyScreen {
                 n
             }
         };
-        let arr = gvas_file.properties.get("PartyShinyList").unwrap().get_array().unwrap();
+        let arr = gvas_file
+            .properties
+            .get("PartyShinyList")
+            .unwrap()
+            .get_array()
+            .unwrap();
         let shiny_vec = get_shiny_list(arr).unwrap();
 
         let mut container_vec: Vec<ImageContainer> = Vec::new();
@@ -51,22 +56,28 @@ impl ScreenTrait for PartyScreen {
         }
 
         self.containers = container_vec;
-
     }
 
     fn ui(&mut self, ui: &mut Ui, app: &mut App) -> ScreenAction {
-
         let mut action: ScreenAction = ScreenAction::None;
         ui.centered_and_justified(|ui| {
             egui::Grid::new("party-grid").show(ui, |ui| {
                 if GVAS_FILE.get().is_none() {
-                    ui.with_layout(Layout::centered_and_justified(Direction::LeftToRight), |ui| {
-                        let text: RichText = RichText::new("Party not found. Please load a save file to continue.").size(24.0);
-                            ui.add_sized([ui.available_width(), 24.0],egui::Label::new(text));
-                        });
+                    ui.with_layout(
+                        Layout::centered_and_justified(Direction::LeftToRight),
+                        |ui| {
+                            let text: RichText = RichText::new(
+                                "Party not found. Please load a save file to continue.",
+                            )
+                            .size(24.0);
+                            ui.add_sized([ui.available_width(), 24.0], egui::Label::new(text));
+                        },
+                    );
                 }
                 for container in self.containers.iter() {
-                    let res: Response = ui.add(render_image(container.path.clone())).interact(Sense::click());
+                    let res: Response = ui
+                        .add(render_image(container.path.clone()))
+                        .interact(Sense::click());
                     if res.clicked() {
                         Logger::info_once(format!("{} Clicked!", container.name));
 
@@ -101,19 +112,15 @@ impl ScreenTrait for PartyScreen {
 
 pub fn get_names(gvas_file: &GvasFile) -> Option<Vec<String>> {
     let prop: &Property = match gvas_file.properties.get("PartyPokemonClasses") {
-        None => {return None}
-        Some(p) => {p}
+        None => return None,
+        Some(p) => p,
     };
     let arr = prop.get_array()?;
     let mut class_vec: Vec<String> = Vec::new();
     for i in 0..5 {
         let class = match class_at(&arr, i) {
-            None => {
-                continue
-            }
-            Some(c) => {
-                c
-            }
+            None => continue,
+            Some(c) => c,
         };
         class_vec.push(class.clone());
     }
@@ -121,8 +128,8 @@ pub fn get_names(gvas_file: &GvasFile) -> Option<Vec<String>> {
     let mut vec: Vec<String> = Vec::new();
     for i in class_vec.iter() {
         let parsed: String = match parse_class(i.as_str()) {
-            None => {"".to_string()}
-            Some(c) => {c}
+            None => "".to_string(),
+            Some(c) => c,
         };
         vec.push(parsed)
     }

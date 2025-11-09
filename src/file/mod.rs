@@ -8,6 +8,4 @@ pub fn parse_with_root(string: String) -> PathBuf {
     let mut path: PathBuf = get_root();
     path.push(string);
     path
-
-
 }

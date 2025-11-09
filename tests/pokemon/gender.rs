@@ -1,5 +1,5 @@
-use gammaeditor::save::pokemon::gender::gender_string_at;
 use crate::pokemon::common::get_gvas;
+use gammaeditor::save::pokemon::gender::gender_string_at;
 
 #[test]
 pub fn gender_string_at_returns_class_string() {

@@ -13,7 +13,7 @@ pub fn id_array_mut(property: &mut Property) -> Option<&mut ArrayProperty> {
 pub fn id_at(array: &ArrayProperty, index: usize) -> Option<&i32> {
     match array {
         ArrayProperty::Ints { ints, .. } => ints.get(index),
-        _ => None
+        _ => None,
     }
 }
 

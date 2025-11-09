@@ -1,3 +1,4 @@
+use gammaeditor::property::traits::PropertyPath;
 use gvas::game_version::GameVersion;
 use gvas::properties::array_property::ArrayProperty;
 use gvas::properties::int_property::BytePropertyValue;
@@ -5,7 +6,6 @@ use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
 use gvas::properties::Property;
 use gvas::GvasFile;
 use std::fs::File;
-use gammaeditor::property::traits::PropertyPath;
 
 #[test]
 fn test_get_starts_with_gets_level() {
@@ -13,7 +13,8 @@ fn test_get_starts_with_gets_level() {
     let mut f = File::open("Slot1.sav").expect("open sav");
     let gvas = GvasFile::read(&mut f, GameVersion::Default).expect("read gvas");
 
-    let party = gvas.properties
+    let party = gvas
+        .properties
         .get("PartyPokemonInfo")
         .expect("PartyPokemonInfo present");
 
@@ -50,7 +51,8 @@ fn get_vec() -> Option<Vec<StructProperty>> {
     let mut f = File::open("Slot1.sav").expect("open sav");
     let gvas = GvasFile::read(&mut f, GameVersion::Default).expect("read gvas");
 
-    let party = gvas.properties
+    let party = gvas
+        .properties
         .get("PartyPokemonInfo")
         .expect("PartyPokemonInfo present");
 
@@ -60,9 +62,7 @@ fn get_vec() -> Option<Vec<StructProperty>> {
     };
 
     match arr {
-        ArrayProperty::Structs { structs, .. } => {
-            Some(structs.clone())
-        }
+        ArrayProperty::Structs { structs, .. } => Some(structs.clone()),
         _ => panic!("ArrayProperty but not Structs"),
     }
 }
@@ -85,7 +85,6 @@ fn test_get_starts_with_gets_is_fainted() {
                     }
                 }
             }
-
         }
         _ => {
             println!("not a struct");
@@ -128,7 +127,12 @@ fn test_get_starts_with_gets_primary_type() {
                 match satk {
                     Property::ByteProperty(inner) => {
                         println!("{:?}", inner.value);
-                        assert_eq!(inner.value, BytePropertyValue::Namespaced("ENUM_PokemonTypePrimary::NewEnumerator8".to_string()));
+                        assert_eq!(
+                            inner.value,
+                            BytePropertyValue::Namespaced(
+                                "ENUM_PokemonTypePrimary::NewEnumerator8".to_string()
+                            )
+                        );
                     }
                     _ => {
                         panic!("expected DoubleProperty");

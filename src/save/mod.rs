@@ -1,19 +1,18 @@
+use gvas::game_version::GameVersion;
+use gvas::properties::Property;
+use gvas::GvasFile;
 use std::fs::File;
 use std::io;
 use std::io::Write;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
-use gvas::game_version::GameVersion;
-use gvas::GvasFile;
-use gvas::properties::Property;
-pub mod utils;
 pub mod pokemon;
+pub mod utils;
 
 pub type SharedGvas = Arc<RwLock<GvasFile>>;
 pub type SharedState = Arc<RwLock<AppState>>;
 
 pub struct Shared(SharedState);
-
 
 pub trait SharedStateExt {
     fn with<R>(&self, f: impl FnOnce(&AppState) -> R) -> Option<R>;
@@ -34,10 +33,9 @@ impl SharedStateExt for SharedState {
 pub struct AppState {
     pub file_path: Option<PathBuf>,
     pub gvas_file: Option<SharedGvas>,
-    pub json: Option<String>
+    pub json: Option<String>,
 }
 impl AppState {
-
     pub fn empty() -> Self {
         Self {
             file_path: None,
@@ -57,7 +55,7 @@ impl AppState {
         if let Some(path) = &self.file_path {
             let file: Result<File, io::Error> = File::open(path);
             match file {
-                Ok(f) => { Some(f) }
+                Ok(f) => Some(f),
                 Err(_e) => {
                     // todo!() add logging, why did it fail, etc
                     None
@@ -66,21 +64,18 @@ impl AppState {
         } else {
             None
         }
-
     }
 
     pub fn load_gvas(&mut self) -> () {
         match self.get_file_from_path() {
-            Some(mut file) => {
-                match GvasFile::read(&mut file, GameVersion::Default) {
-                    Ok(gvas) =>  {
-                        self.gvas_file = Some(Arc::new(RwLock::new(gvas)));
-                    },
-                    Err(e) => {
-                        eprintln!("{e}");
-                    }
+            Some(mut file) => match GvasFile::read(&mut file, GameVersion::Default) {
+                Ok(gvas) => {
+                    self.gvas_file = Some(Arc::new(RwLock::new(gvas)));
                 }
-            }
+                Err(e) => {
+                    eprintln!("{e}");
+                }
+            },
             None => {}
         }
     }
@@ -95,7 +90,11 @@ impl AppState {
     {
         let mut guard = self.gvas_file.as_ref()?.write().ok()?;
         println!("{:?}", guard.properties.keys());
-        println!("Contains key '{}': {}", &key, guard.properties.contains_key(key));
+        println!(
+            "Contains key '{}': {}",
+            &key,
+            guard.properties.contains_key(key)
+        );
         let prop = guard.properties.get_mut(key)?;
 
         Some(f(prop))
@@ -115,7 +114,11 @@ impl AppState {
         match gvas.read() {
             Ok(guard) => {
                 eprintln!("Lock succeeded!");
-                eprintln!("Contains key '{}': {}", key, guard.properties.contains_key(key));
+                eprintln!(
+                    "Contains key '{}': {}",
+                    key,
+                    guard.properties.contains_key(key)
+                );
                 if let Some(prop) = guard.properties.get(key) {
                     Some(f(prop))
                 } else {
@@ -130,6 +133,3 @@ impl AppState {
         }
     }
 }
-
-
-

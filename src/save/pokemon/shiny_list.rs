@@ -4,34 +4,24 @@ use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
 use gvas::properties::Property;
 use gvas::GvasFile;
 
-pub fn get_shiny_list(array: &ArrayProperty) -> Option<&Vec<bool>>{
+pub fn get_shiny_list(array: &ArrayProperty) -> Option<&Vec<bool>> {
     match array {
-        ArrayProperty::Bools { bools } => {
-            Some(bools)
-        }
-        _ => None
+        ArrayProperty::Bools { bools } => Some(bools),
+        _ => None,
     }
 }
 
 pub fn get_shiny_at(array: &ArrayProperty, index: usize) -> Option<&bool> {
     match array {
-        ArrayProperty::Bools { bools } => {
-            bools.get(index)
-        }
-        _ => {
-            None
-        }
+        ArrayProperty::Bools { bools } => bools.get(index),
+        _ => None,
     }
 }
 
 pub fn get_shiny_at_mut(array: &mut ArrayProperty, index: usize) -> Option<&mut bool> {
     match array {
-        ArrayProperty::Bools { ref mut bools } => {
-            bools.get_mut(index)
-        }
-        _ => {
-            None
-        }
+        ArrayProperty::Bools { ref mut bools } => bools.get_mut(index),
+        _ => None,
     }
 }
 
@@ -46,16 +36,14 @@ pub fn set_shiny_at(array: &mut ArrayProperty, index: usize, value: bool) -> boo
 }
 
 pub struct ShinyList<'a> {
-    pub property: &'a Property
+    pub property: &'a Property,
 }
 
 impl<'a> ShinyList<'a> {
     pub fn new_party(gvas_file: &'a GvasFile) -> Option<Self> {
-        let prop = match gvas_file.properties.get("PartyShinyList"){
-            None => {None}
-            Some(p) => {
-                Some(Self { property: p })
-            }
+        let prop = match gvas_file.properties.get("PartyShinyList") {
+            None => None,
+            Some(p) => Some(Self { property: p }),
         };
 
         prop
@@ -79,18 +67,18 @@ impl<'a> ShinyList<'a> {
 }
 
 pub struct ShinyListMut<'a> {
-    property: &'a mut Property
+    property: &'a mut Property,
 }
 
 impl<'a> ShinyListMut<'a> {
     pub fn new_party(gvas_file: &'a mut GvasFile) -> Option<Self> {
         let property: &mut Property = match gvas_file.properties.get_mut("PartyShinyList") {
-            None => {return None;}
-            Some(p) => {p}
+            None => {
+                return None;
+            }
+            Some(p) => p,
         };
-        Some(Self {
-             property
-        })
+        Some(Self { property })
     }
 
     pub fn set_shiny_at(&mut self, index: usize, value: bool) -> Result<(), String> {
@@ -100,10 +88,13 @@ impl<'a> ShinyListMut<'a> {
                     *shiny = value;
                     Ok(())
                 } else {
-                    Err(format!("Failed to set shiny at index {} (does it exist?)", index))
+                    Err(format!(
+                        "Failed to set shiny at index {} (does it exist?)",
+                        index
+                    ))
                 }
             }
-            _ => { Err(format!("Failed to set shiny at index {}", index)) }
+            _ => Err(format!("Failed to set shiny at index {}", index)),
         }
     }
 }

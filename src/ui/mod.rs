@@ -1,12 +1,12 @@
-use egui::{Color32, Image, TextureHandle, Vec2};
-use egui::load::SizedTexture;
-use rust_embed::EmbeddedFile;
 use crate::app::Asset;
 use crate::ui::image::ImageContainer;
+use egui::load::SizedTexture;
+use egui::{Color32, Image, TextureHandle, Vec2};
+use rust_embed::EmbeddedFile;
 
-pub mod screen;
-pub mod menu;
 pub(crate) mod image;
+pub mod menu;
+pub mod screen;
 
 fn render_image<'a>(path: String) -> Image<'a> {
     Image::new(path)
@@ -32,6 +32,7 @@ pub fn render_texture(texture: &TextureHandle) -> Image {
     Image::new(SizedTexture {
         id: texture.id(),
         size: Vec2::new(64.0, 64.0),
-    }).corner_radius(5)
-        .bg_fill(Color32::from_rgb(50, 50, 50))
+    })
+    .corner_radius(5)
+    .bg_fill(Color32::from_rgb(50, 50, 50))
 }

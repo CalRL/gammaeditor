@@ -1,8 +1,7 @@
-use std::process;
 use eframe::NativeOptions;
 use gammaeditor::app::App;
 use gammaeditor::logger::Logger;
-
+use std::process;
 
 fn main() {
     Logger::init().unwrap();
@@ -16,11 +15,10 @@ fn main() {
         Box::new(|cc| {
             egui_extras::install_image_loaders(&cc.egui_ctx);
             Ok(Box::new(App::new(cc)))
-        })
+        }),
     )
-        .expect("How did we get here?");
+    .expect("How did we get here?");
 }
-
 
 fn run_generator(args: Vec<String>) -> Result<String, String> {
     println!("Starting generator");

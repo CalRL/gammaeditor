@@ -1,14 +1,13 @@
-
-use std::ops::Index;
-use gvas::GvasFile;
-use gvas::properties::int_property::IntProperty;
-use gvas::properties::Property;
-use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
 use crate::gvas;
 use crate::pkmn::stats::{IVSpread, IVs};
 use crate::property::traits::StartsWith;
 use crate::save::pokemon::StorageType;
 use crate::utils::custom_struct::{get_struct_property_at_idx, get_struct_property_at_idx_mut};
+use gvas::properties::int_property::IntProperty;
+use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
+use gvas::properties::Property;
+use gvas::GvasFile;
+use std::ops::Index;
 
 pub fn get_ivs<'a>(properties: &'a StructProperty) -> Option<Vec<&'a i32>> {
     match &properties.value {
@@ -21,7 +20,7 @@ pub fn get_ivs<'a>(properties: &'a StructProperty) -> Option<Vec<&'a i32>> {
             }
             Some(ivs)
         }
-        _ => None
+        _ => None,
     }
 }
 
@@ -37,7 +36,7 @@ pub fn get_iv_at_mut(properties: &mut StructProperty, index: usize, ivs: IVs) ->
 pub struct IV<'a> {
     property: &'a Property,
     box_number: Option<usize>,
-    storage_type: StorageType
+    storage_type: StorageType,
 }
 
 impl<'a> IV<'a> {
@@ -84,7 +83,7 @@ impl<'a> IV<'a> {
 pub struct IVMut<'a> {
     property: &'a mut Property,
     box_number: Option<usize>,
-    storage_type: StorageType
+    storage_type: StorageType,
 }
 
 impl<'a> IVMut<'a> {
@@ -103,7 +102,7 @@ impl<'a> IVMut<'a> {
             None => {
                 return Err("Failed to get struct property mutably.".to_string());
             }
-            Some(prop) => {prop}
+            Some(prop) => prop,
         };
 
         match &mut sp.value {
@@ -111,20 +110,22 @@ impl<'a> IVMut<'a> {
                 for (k, v) in properties.0.iter_mut() {
                     if k.starts_with(iv.as_str()) {
                         let prop: &mut Property = match v.first_mut() {
-                            None => { return Err("Failed to get first".to_string())}
-                            Some(prop) => {prop}
+                            None => return Err("Failed to get first".to_string()),
+                            Some(prop) => prop,
                         };
 
                         match prop {
                             Property::IntProperty(ref mut prop) => {
                                 prop.value = value;
                             }
-                            _ => {return Err(format!("Failed to get int: {:?}", prop));}
+                            _ => {
+                                return Err(format!("Failed to get int: {:?}", prop));
+                            }
                         }
                     }
                 }
             }
-            _ => return Err("set_iv_at failed.".to_string())
+            _ => return Err("set_iv_at failed.".to_string()),
         };
         Ok(())
     }

@@ -2,13 +2,13 @@ pub mod home_screen;
 pub mod party_screen;
 pub(crate) mod single_screen;
 
-use std::fmt::format;
 use crate::app::App;
 use crate::logger::Logger;
+use crate::ui::screen::home_screen::HomeScreen;
+use egui::{CentralPanel, Ui};
 use party_screen::PartyScreen;
 use single_screen::SingleScreen;
-use egui::{CentralPanel, Ui};
-use crate::ui::screen::home_screen::HomeScreen;
+use std::fmt::format;
 
 #[derive(Clone)]
 pub enum Screen {
@@ -37,22 +37,21 @@ impl ScreenTrait for Screen {
 
 pub enum ScreenState {
     Party(PartyScreen),
-    Empty()
+    Empty(),
 }
-
 
 pub enum ScreenAction {
     None,
     ChangeTo(Screen),
-    Reload
+    Reload,
 }
 
 impl ScreenAction {
     pub fn as_str(&self) -> &str {
         match self {
-            ScreenAction::None => {"None"}
-            ScreenAction::ChangeTo(_) => {"ChangeTo"}
-            ScreenAction::Reload => {"Reload"}
+            ScreenAction::None => "None",
+            ScreenAction::ChangeTo(_) => "ChangeTo",
+            ScreenAction::Reload => "Reload",
         }
     }
 }
@@ -60,8 +59,8 @@ impl ScreenAction {
 impl ScreenState {
     pub fn name(&self) -> &str {
         match self {
-            ScreenState::Party(_) => {"Party"}
-            _ => ""
+            ScreenState::Party(_) => "Party",
+            _ => "",
         }
     }
 }
@@ -76,14 +75,15 @@ impl Screen {
     pub fn iter() -> impl Iterator<Item = Screen> {
         [
             // we dont want Single in here
-        ].into_iter()
+        ]
+        .into_iter()
     }
 
     pub fn as_str(&self) -> &str {
         match &self {
-            Screen::Party(PartyScreen) => {"Party"}
-            Screen::Single(SingleScreen) => {"Single"}
-            Screen::Home(HomeScreen) => {"Home"}
+            Screen::Party(PartyScreen) => "Party",
+            Screen::Single(SingleScreen) => "Single",
+            Screen::Home(HomeScreen) => "Home",
         }
     }
 }
@@ -108,13 +108,10 @@ pub fn get_images_path() -> String {
 }
 
 pub fn render_screen(app_state: &mut App, ctx: &egui::Context) {
-
     CentralPanel::default().show(ctx, |ui| {
         let mut action: ScreenAction = ScreenAction::None;
-        if app_state.is_save_loaded() {
+        if app_state.is_save_loaded() {}
 
-        }
-        
         action = match &mut app_state.clone().screen {
             Screen::Home(s) => s.ui(ui, app_state),
             Screen::Party(s) => s.ui(ui, app_state),

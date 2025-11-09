@@ -1,7 +1,7 @@
-use std::io;
-use std::process::{Child, Command};
 use crate::logger::Logger;
 use crate::ui::menu::{MenuButton, OnClick};
+use std::io;
+use std::process::{Child, Command};
 
 pub struct DiscordButton;
 

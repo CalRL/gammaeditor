@@ -1,10 +1,12 @@
+use gvas::game_version::GameVersion;
+use gvas::properties::int_property::{
+    BoolProperty, ByteProperty, BytePropertyValue, DoubleProperty,
+};
+use gvas::properties::Property;
+use gvas::GvasFile;
+use ordered_float::OrderedFloat;
 use std::fs::File;
 use std::sync::{Arc, RwLock};
-use gvas::game_version::GameVersion;
-use gvas::GvasFile;
-use gvas::properties::int_property::{BoolProperty, ByteProperty, BytePropertyValue, DoubleProperty};
-use gvas::properties::Property;
-use ordered_float::OrderedFloat;
 
 pub fn get_gvas<'a>() -> GvasFile {
     let mut file = File::open("Slot1.sav").expect("save file not found");
@@ -19,7 +21,6 @@ pub fn get_gvas_mut<'a>() -> GvasFile {
 
     gvas.clone()
 }
-
 
 fn make_bool_property(value: bool) -> Property {
     Property::BoolProperty(BoolProperty { value })
