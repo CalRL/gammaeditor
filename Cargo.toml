@@ -16,6 +16,8 @@ eframe = "0.33.0"
 egui = { version =  "0.33.0" }
 egui_extras = { version = "0.33.0", features = ["all_loaders"]}
 rfd = { version = "0.15.4" }
+rust-embed="8.9.0"
+image = { version = "0.25.8" }
 
 [dev-dependencies]
 ordered-float = { version = "4.6.0"}
