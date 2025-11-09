@@ -96,7 +96,7 @@ pub trait ScreenTrait {
 pub fn render_pokemon_path<'a>(name: String, is_shiny: bool) -> String {
     let shiny_folder: &str = if is_shiny { "shiny" } else { "normal" };
     format!(
-        "file://{}/scraper/images/{}/{}.png",
+        "file://{}/images/{}/{}.png",
         env!("CARGO_MANIFEST_DIR").replace("\\", "/"),
         shiny_folder,
         name
