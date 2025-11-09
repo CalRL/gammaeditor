@@ -11,14 +11,16 @@ use egui::{Button, Image, Response, RichText, Sense, TextEdit, Ui};
 use egui_extras::{Column, TableBuilder, TableRow};
 use gvas::GvasFile;
 use std::collections::HashMap;
+use std::fmt::format;
 use std::sync::RwLockWriteGuard;
 use eframe::emath::Vec2;
 use eframe::epaint::Color32;
+use egui::Shape::Path;
 use rfd::MessageDialogResult::No;
 use crate::save::pokemon::pokemon_classes::{parse_class, PokemonClasses};
 use crate::save::pokemon::StorageType;
 use crate::ui::image::ImageContainer;
-use crate::ui::render_image_container;
+use crate::ui::{render_image_container, render_texture};
 
 #[derive(Clone, Debug)]
 pub struct SingleScreen {
@@ -398,7 +400,16 @@ impl ScreenTrait for SingleScreen {
         if let Some(data) = &self.mon_data {
             let shiny = ui.horizontal(|ui| {
                 let parsed_class = parse_class(data.class.clone().as_str()).unwrap();
-                ui.add(render_image_container(&ImageContainer::new_party(parsed_class, data.is_shiny.clone(), data.index.clone())));
+                let shiny_text = if data.is_shiny { "shiny" } else { "normal" };
+
+                let path = format!("{}/{}.png", shiny_text, parsed_class);
+                if let Some(tex) = app.image_cache.get(ui.ctx(), path.as_str()) {
+                    let image: Image = render_texture(tex);
+                    ui.add(image);
+                } else {
+                    Logger::info(format!("No such image: {}", path.as_str()));
+                }
+
                 fn flip_shiny(mut guard: RwLockWriteGuard<GvasFile>, data: &SingleMon) -> ScreenAction {
                     let gvas = &mut *guard;
                     if let Some(mut list) = ShinyListMut::new_party(gvas) {
