@@ -454,7 +454,7 @@ impl ScreenTrait for SingleScreen {
                 }
                 if data.is_shiny {
                     let res: Response = ui.add(
-                        Image::new(format!("{}/shiny.png", get_images_path()))
+                        Image::new(format!("{}shiny.png", get_images_path()))
                             .corner_radius(5)
                             .bg_fill(Color32::from_rgb(50, 50, 50))
                             .fit_to_exact_size(Vec2::new(16.0, 16.0))
@@ -472,7 +472,7 @@ impl ScreenTrait for SingleScreen {
                     }
                 } else {
                     let res: Response = ui.add(
-                        Image::new(format!("{}/non_shiny.png", get_images_path()))
+                        Image::new(format!("{}non_shiny.png", get_images_path()))
                             .corner_radius(5)
                             .bg_fill(Color32::from_rgb(0, 0, 0))
                             .fit_to_exact_size(Vec2::new(16.0, 16.0))
