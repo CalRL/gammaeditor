@@ -6,7 +6,7 @@ use crate::save::pokemon::iv_struct::IV;
 use crate::save::pokemon::pokemon_classes::{parse_class, PokemonClasses};
 use crate::save::pokemon::pokemon_info::{InfoStruct, PokemonInfo, PokemonInfoMut};
 use crate::save::pokemon::shiny_list::{ShinyList, ShinyListMut};
-use crate::save::pokemon::StorageType;
+use crate::save::pokemon::{correct_name, StorageType};
 use crate::ui::image::ImageContainer;
 use crate::ui::screen::{get_images_path, render_pokemon_path, Reload, ScreenAction, ScreenTrait};
 use crate::ui::{render_image_container, render_texture};
@@ -322,29 +322,32 @@ impl SingleScreen {
 impl ScreenTrait for SingleScreen {
     fn load(&mut self, app: &mut App) {
         Logger::info("Loading SingleScreen");
-        Logger::info("Getting gvas");
-        let gvas_file = &*unwrap_gvas!(GVAS_FILE);
-        Logger::info("Got gvas");
+        let gvas_file: &GvasFile = &*unwrap_gvas!(GVAS_FILE);
 
-        Logger::info("Getting idx");
         let idx = match app.selected_mon.clone() {
-            None => return,
+            None => {
+                Logger::info("Failed to get mon.idx");
+                return
+            },
             Some(sel) => sel.index,
         };
 
-        Logger::info("Getting is_shiny");
         let is_shiny = match ShinyList::new_party(gvas_file) {
             None => return,
             Some(l) => match l.get_shiny_at(idx) {
-                None => return,
+                None => {
+                    Logger::info("Failed to get is_shiny");
+                    return
+                },
                 Some(s) => s.clone(),
             },
         };
-        Logger::info(is_shiny.clone().to_string());
 
-        Logger::info("Getting name");
         let party = match PokemonInfo::new_party(gvas_file) {
-            None => return,
+            None => {
+                Logger::info("Failed to get mon name");
+                return
+            },
             Some(c) => c,
         };
 
@@ -355,10 +358,9 @@ impl ScreenTrait for SingleScreen {
             Some(name) => name,
         };
 
-        Logger::info("Getting stats");
-
         let stats: StatStruct = match party.get_stats(idx) {
             None => {
+                Logger::info("Failed to get stats");
                 return;
             }
             Some(s) => s,
@@ -367,29 +369,36 @@ impl ScreenTrait for SingleScreen {
         // todo!() wget ALL mon data, ivs, stats, moves, pp, etc.
         let iv_wrapper: IV = match IV::new_party(gvas_file) {
             None => {
+                Logger::info("Failed to create IV wrapper");
                 return;
             }
             Some(wrapper) => wrapper,
         };
+
         let ivs: IVSpread = match iv_wrapper.get_ivs_at(idx) {
             None => {
+                Logger::info("Failed to get IVs");
                 return;
             }
             Some(ivs) => match IV::to_struct(ivs.iter().map(|&v| *v).collect()) {
                 None => {
+                    Logger::info("Failed to map IVs to struct");
                     return;
                 }
                 Some(s) => s,
             },
         };
+
         let class = match PokemonClasses::new_party(gvas_file) {
             None => {
+                Logger::info("Failed to create Classes wrapper");
                 return;
             }
             Some(party) => {
                 if let Some(c) = party.class_at(idx.clone()) {
                     c.clone()
                 } else {
+                    Logger::info(format!("Failed to get class at index: {}", idx.clone()));
                     return;
                 }
             }
@@ -398,14 +407,14 @@ impl ScreenTrait for SingleScreen {
         self.mon_data = Some(SingleMon {
             index: idx,
             storage_type: StorageType::PARTY,
-            class,
+            class: class.clone(),
             is_shiny,
             name: name.clone(),
             stats,
             ivs,
         });
         self.loaded = true;
-        Logger::info(format!("Loaded info in SingleScreen for: {}", name));
+        Logger::info(format!("Loaded info in SingleScreen for: {:?}", parse_class(class.as_str())));
     }
 
     fn ui(&mut self, ui: &mut Ui, app: &mut App) -> ScreenAction {
@@ -417,7 +426,7 @@ impl ScreenTrait for SingleScreen {
                 let parsed_class = parse_class(data.class.clone().as_str()).unwrap();
                 let shiny_text = if data.is_shiny { "shiny" } else { "normal" };
 
-                let path = format!("{}/{}.png", shiny_text, parsed_class);
+                let path = format!("{}/{}.png", shiny_text, correct_name(parsed_class));
                 if let Some(tex) = app.image_cache.get(ui.ctx(), path.as_str()) {
                     let image: Image = render_texture(tex);
                     ui.add(image);
@@ -487,7 +496,7 @@ impl ScreenTrait for SingleScreen {
                 self.loaded = false;
                 return ScreenAction::Reload;
             }
-            ui.label("Name");
+            ui.label("Nickname");
             let mut display: String = data.name.clone();
             let res: Response = ui.add(TextEdit::singleline(&mut display).desired_width(200.0));
             if res.changed() {

@@ -2,7 +2,7 @@ use crate::app::{App, GVAS_FILE};
 use crate::logger::Logger;
 use crate::save::pokemon::pokemon_classes::{class_at, parse_class};
 use crate::save::pokemon::shiny_list::get_shiny_list;
-use crate::save::pokemon::{SelectedMon, StorageType};
+use crate::save::pokemon::{correct_name, SelectedMon, StorageType};
 use crate::ui::image::ImageContainer;
 use crate::ui::render_image;
 use crate::ui::screen::single_screen::{SingleScreen, SingleScreenBuffer};
@@ -50,7 +50,7 @@ impl ScreenTrait for PartyScreen {
 
         let mut container_vec: Vec<ImageContainer> = Vec::new();
         for (i, (name, is_shiny)) in names.iter().zip(shiny_vec.iter()).enumerate() {
-            let container = ImageContainer::new_party(name.clone(), is_shiny.clone(), i);
+            let container = ImageContainer::new_party(correct_name(name.clone()), is_shiny.clone(), i);
 
             container_vec.push(container);
         }

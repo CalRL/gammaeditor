@@ -54,3 +54,11 @@ impl SelectedMon {
         true
     }
 }
+
+/// Corrects an invalid mon's name
+pub fn correct_name(name: String) -> String {
+    match name.as_str() {
+        "Metacross" => "Metagross",
+        other => other
+    }.to_string()
+}
