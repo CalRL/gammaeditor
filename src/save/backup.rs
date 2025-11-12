@@ -1,8 +1,5 @@
 use std::fs;
 use std::path::Path;
-use tauri::command;
-
-#[command]
 pub fn create_backup() -> Result<String, String>{
     let local_appdata = std::env::var("LOCALAPPDATA")
         .map_err(|_| "Could not find LOCALAPPDATA variable...".to_string())?;
