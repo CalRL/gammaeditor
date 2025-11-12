@@ -153,7 +153,9 @@ impl Logger {
         if let Some(mtx) = Self::sender() {
             if let Ok(sender) = mtx.lock() {
                 let string: String = message.into().clone();
-                println!("{:?} > {}", level, string);
+                if cfg!(debug_assertions) {
+                    println!("{:?} > {}", level, string);
+                }
                 let _ = sender.send(LogMessage {
                     level,
                     content: string,
