@@ -10,7 +10,7 @@ pub struct ImageContainer {
     pub(crate) path: String,
     pub storage_type: StorageType,
     pub index: usize,
-    pub class: String,
+    pub parsed_class: String,
     pub is_shiny: bool,
 }
 
@@ -23,7 +23,7 @@ impl ImageContainer {
         Some(Self {
             path,
             storage_type: StorageType::PARTY,
-            class,
+            parsed_class: class,
             is_shiny,
             index,
         })
