@@ -146,7 +146,7 @@ impl App {
 }
 
 #[derive(Embed)]
-#[folder = "images/"]
+#[folder = "images"]
 pub struct Asset;
 
 impl eframe::App for App {
