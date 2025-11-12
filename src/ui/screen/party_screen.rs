@@ -1,22 +1,23 @@
 use crate::app::{App, GVAS_FILE};
 use crate::logger::Logger;
-use crate::save::pokemon::pokemon_classes::{class_at, parse_class};
+use crate::save::pokemon::pokemon_classes::{class_at, parse_class, PokemonClasses};
 use crate::save::pokemon::shiny_list::get_shiny_list;
 use crate::save::pokemon::{correct_name, SelectedMon, StorageType};
 use crate::ui::image::ImageContainer;
-use crate::ui::render_image;
+use crate::ui::{render_image, render_texture};
 use crate::ui::screen::single_screen::{SingleScreen, SingleScreenBuffer};
 use crate::ui::screen::{render_pokemon_path, Screen, ScreenAction, ScreenTrait};
 use crate::utils::set_data_persisted;
-use egui::{CursorIcon, Direction, Layout, Response, RichText, Sense, TextBuffer, Ui};
+use egui::{CursorIcon, Direction, Image, Layout, Response, RichText, Sense, TextBuffer, Ui};
 use gvas::properties::Property;
 use gvas::GvasFile;
 use std::ops::Deref;
+use crate::unwrap_gvas;
 
 #[derive(Clone)]
 pub struct PartyScreen {
     pub(crate) loaded: bool,
-    pub containers: Vec<ImageContainer>,
+    pub containers: Vec<Option<ImageContainer>>,
 }
 
 impl ScreenTrait for PartyScreen {
@@ -25,21 +26,31 @@ impl ScreenTrait for PartyScreen {
             return;
         }
 
-        let gvas_file: &GvasFile = match app.gvas_file.as_ref() {
-            Some(file) => &file.read().unwrap().to_owned(),
-            None => return,
+        let gvas_file: &GvasFile = &*unwrap_gvas!(GVAS_FILE);
+
+        let wrapper: PokemonClasses = match PokemonClasses::new_party(gvas_file) {
+            None => {
+                Logger::error("Failed to create classes wrapper");
+                return;
+            }
+            Some(w) => {w}
         };
 
-        let names = match get_names(gvas_file) {
+        let classes: Vec<&String> = match wrapper.classes() {
             None => {
                 Logger::error("Failed to get names");
-                Vec::new()
+                return;
             }
-            Some(n) => {
-                Logger::info_once(n.join(", "));
-                n
+            Some(v) => {
+                v
             }
         };
+
+        let Some(parsed) = wrapper.parse_classes(classes) else {
+            Logger::error("Failed to parse classes");
+            return;
+        };
+
         let arr = gvas_file
             .properties
             .get("PartyShinyList")
@@ -48,13 +59,26 @@ impl ScreenTrait for PartyScreen {
             .unwrap();
         let shiny_vec = get_shiny_list(arr).unwrap();
 
-        let mut container_vec: Vec<ImageContainer> = Vec::new();
-        for (i, (name, is_shiny)) in names.iter().zip(shiny_vec.iter()).enumerate() {
-            let container = ImageContainer::new_party(correct_name(name.clone()), is_shiny.clone(), i);
+        if parsed.len() != shiny_vec.len() {
+            return;
+        }
+        Logger::info(format!("Parsed: {:?}", parsed));
+        let mut container_vec: Vec<Option<ImageContainer>> = Vec::new();
+        for i in 0..5 {
+            let class: String = match parsed.get(i) {
+                None => {
+                    Logger::info(format!("Failed to get parsed at index {}", i));
+                    continue;
+                }
+                Some(class) => {class.clone()}
+            };
+            let shiny = shiny_vec.get(i).unwrap().clone();
 
+            let container = ImageContainer::new_party(class.clone(), shiny, i);
             container_vec.push(container);
         }
 
+        Logger::info(format!("{:?}", container_vec));
         self.containers = container_vec;
     }
 
@@ -74,34 +98,46 @@ impl ScreenTrait for PartyScreen {
                         },
                     );
                 }
-                for container in self.containers.iter() {
-                    let res: Response = ui
-                        .add(render_image(container.path.clone()))
-                        .interact(Sense::click());
-                    if res.clicked() {
-                        Logger::info_once(format!("{} Clicked!", container.name));
 
-                        let mon: SelectedMon = SelectedMon {
-                            storage_type: StorageType::PARTY,
-                            index: container.index,
-                        };
-                        set_data_persisted(ui.ctx(), "selected_mon".into(), mon.clone());
+                for option in self.containers.iter() {
+                    let container: &ImageContainer = match option {
+                        None => {
+                            continue
+                        },
+                        Some(p) => p
+                    };
+                    if let Some(tex) = app.image_cache.get(ui.ctx(), container.path.as_str()) {
+                        let image: Image = render_texture(tex).sense(Sense::click());
+                        let res = ui.add(image);
 
-                        app.selected_mon = Some(mon.clone());
+                        if res.clicked() {
+                            Logger::info_once(format!("{} Clicked!", container.class));
 
-                        Logger::info_once("Set selected mon");
-                        action = ScreenAction::ChangeTo(Screen::Single(SingleScreen {
-                            loaded: false,
-                            mon_data: None,
-                            buf: SingleScreenBuffer::default(),
-                            gvas_file: None,
-                            needs_refresh: true,
-                        }))
+                            let mon: SelectedMon = SelectedMon {
+                                storage_type: StorageType::PARTY,
+                                index: container.index,
+                            };
+                            set_data_persisted(ui.ctx(), "selected_mon".into(), mon.clone());
+
+                            app.selected_mon = Some(mon.clone());
+
+                            Logger::info_once("Set selected mon");
+                            action = ScreenAction::ChangeTo(Screen::Single(SingleScreen {
+                                loaded: false,
+                                mon_data: None,
+                                buf: SingleScreenBuffer::default(),
+                                gvas_file: None,
+                                needs_refresh: true,
+                            }))
+                        }
+
+                        if res.hovered() {
+                            ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
+                        }
+                    } else {
+                        Logger::info(format!("No such image: {}", container.path.as_str()));
                     }
 
-                    if res.hovered() {
-                        ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
-                    }
                 }
             });
         });
