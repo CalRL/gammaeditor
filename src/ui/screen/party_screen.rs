@@ -111,7 +111,7 @@ impl ScreenTrait for PartyScreen {
                         let res = ui.add(image);
 
                         if res.clicked() {
-                            Logger::info_once(format!("{} Clicked!", container.class));
+                            Logger::info_once(format!("{} Clicked!", container.parsed_class));
 
                             let mon: SelectedMon = SelectedMon {
                                 storage_type: StorageType::PARTY,
