@@ -7,15 +7,15 @@ use crate::ui::screen::party_screen::PartyScreen;
 use crate::ui::screen::single_screen::SingleScreen;
 use crate::ui::screen::ScreenTrait;
 use crate::ui::screen::{render_screen, Screen};
-use eframe::emath::Align;
 use egui::panel::TopBottomSide;
-use egui::{CursorIcon, Direction, Id, Label, Layout, RichText, Sense};
+use egui::{CursorIcon, Id, Label, RichText, Sense};
 use gvas::GvasFile;
 use rfd::MessageLevel;
 use rust_embed::Embed;
 use std::fs::File;
 use std::io::{Cursor, Write};
 use std::sync::{Arc, OnceLock, RwLock, RwLockReadGuard};
+use eframe::IntegrationInfo;
 
 pub static GVAS_FILE: OnceLock<Arc<RwLock<GvasFile>>> = OnceLock::<Arc<RwLock<GvasFile>>>::new();
 
@@ -34,7 +34,7 @@ pub struct Screens {
 
 impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        let logger = match Logger::init() {
+        match Logger::init() {
             Ok(_) => {}
             Err(e) => {
                 rfd::MessageDialog::new()
@@ -100,9 +100,9 @@ impl App {
             Ok(_) => Ok(()),
             Err(e) => {
                 let msg = "Failed to load save (is it already loaded?)";
-                Logger::error(msg.clone());
+                Logger::error(msg);
 
-                Err(msg.to_string())
+                Err(format!("{}: {:?}", msg, e))
             }
         }
     }
@@ -154,6 +154,7 @@ impl eframe::App for App {
         ctx.data_mut(|map| {
             map.insert_persisted(Id::new("selected_mon"), None::<Option<SelectedMon>>)
         });
+        
         render_menu_bar(self, ctx);
         render_navigation_bar(self, ctx);
         render_screen(self, ctx);
