@@ -2,15 +2,16 @@ use eframe::NativeOptions;
 use gammaeditor::app::App;
 use gammaeditor::logger::Logger;
 use std::process;
+use egui::TextBuffer;
 
 fn main() {
     Logger::init().unwrap();
 
     let native_options: NativeOptions = NativeOptions::default();
-    let app_name: &str = "GammaEditor";
+    let app_name: String = format!("GammaEditor {}", env!("CARGO_PKG_VERSION"));
 
     eframe::run_native(
-        app_name,
+        app_name.as_str(),
         native_options,
         Box::new(|cc| {
             egui_extras::install_image_loaders(&cc.egui_ctx);
