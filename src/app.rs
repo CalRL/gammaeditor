@@ -154,7 +154,7 @@ impl eframe::App for App {
         ctx.data_mut(|map| {
             map.insert_persisted(Id::new("selected_mon"), None::<Option<SelectedMon>>)
         });
-        render_menu_bar(ctx, self);
+        render_menu_bar(self, ctx);
         render_navigation_bar(self, ctx);
         render_screen(self, ctx);
     }

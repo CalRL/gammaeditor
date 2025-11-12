@@ -33,7 +33,7 @@ pub trait OnChange {
     fn on_change(&self);
 }
 
-pub fn render_menu_bar(ctx: &Context, state: &mut App) {
+pub fn render_menu_bar(state: &mut App, ctx: &Context) {
     egui::TopBottomPanel::top("menu_bar").show(ctx, |ui| {
         menu::MenuBar::new().ui(ui, |ui| {
             ui.menu_button("File", |ui| {
