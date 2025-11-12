@@ -35,6 +35,13 @@ pub fn get_log_file() -> File {
     }
 }
 
+pub fn get_log_path() -> String {
+    let curr: DateTime<Utc> = Utc::now();
+    let file_name: String = format!("logs/{}.log", curr.format("%d-%m-%y"));
+
+    file_name
+}
+
 static LOGGER_SENDER: OnceLock<Mutex<Sender<LogMessage>>> = OnceLock::new();
 static LAST_LOGGED: OnceLock<Mutex<Option<String>>> = OnceLock::new();
 
