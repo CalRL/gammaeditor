@@ -1,3 +1,5 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 use eframe::NativeOptions;
 use egui::TextBuffer;
 use gammaeditor::app::App;
