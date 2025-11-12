@@ -1,6 +1,6 @@
 [package]
 name = "gammaeditor"
-version = "0.1.0"
+version = "0.2.0"
 description = "A PkHex esque app for Gamma Engine games"
 authors = ["CalRL"]
 edition = "2021"
