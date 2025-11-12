@@ -59,12 +59,11 @@ jobs:
           mkdir dist\GammaEditor\logs
           copy target\x86_64-pc-windows-msvc\release\gammaeditor.exe dist\GammaEditor\gammaeditor.exe
 
-
       - name: Upload Windows binary
         uses: actions/upload-artifact@v4
         with:
           name: gammaeditor-windows
-          path: dist/GammaEditor/
+          path: dist/
 
   # ----------------------------
   # Package Source Code
@@ -76,13 +75,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create source archive
+      - name: Prepare source folder
         run: |
-          mkdir -p dist
-          zip -r "dist/Source code.zip" . -x "target/*" ".git/*" ".idea/*" ".vscode/*"
+          mkdir -p "dist/Source code"
+          rsync -av --exclude 'target' --exclude '.git' --exclude '.idea' --exclude '.vscode' ./ "dist/Source code/"
 
       - name: Upload source code
         uses: actions/upload-artifact@v4
         with:
           name: "Source code"
-          path: "dist/Source code.zip"
+          path: "dist/Source code/"
