@@ -81,9 +81,9 @@ impl Screen {
 
     pub fn as_str(&self) -> &str {
         match &self {
-            Screen::Party(PartyScreen) => "Party",
-            Screen::Single(SingleScreen) => "Single",
-            Screen::Home(HomeScreen) => "Home",
+            Screen::Party(party_screen) => "Party",
+            Screen::Single(single_screen) => "Single",
+            Screen::Home(home_screen) => "Home",
         }
     }
 }
