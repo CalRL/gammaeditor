@@ -1,4 +1,4 @@
-use crate::logger::Logger;
+use crate::logger::{get_log_file, get_log_path, Logger};
 use crate::save::pokemon::SelectedMon;
 use crate::ui::image::ImageCache;
 use crate::ui::menu::render_menu_bar;
@@ -16,6 +16,8 @@ use std::fs::File;
 use std::io::{Cursor, Write};
 use std::sync::{Arc, OnceLock, RwLock, RwLockReadGuard};
 use eframe::IntegrationInfo;
+use egui::util::undoer::Settings;
+use crate::ui::screen::settings_screen::SettingsScreen;
 
 pub static GVAS_FILE: OnceLock<Arc<RwLock<GvasFile>>> = OnceLock::<Arc<RwLock<GvasFile>>>::new();
 
@@ -126,6 +128,10 @@ impl App {
             Screen::Home(mut s) => {
                 s.load(self);
                 Screen::Home(s)
+            },
+            Screen::Settings(mut s) => {
+                s.load(self);
+                Screen::Settings(s)
             }
         };
 
@@ -154,7 +160,7 @@ impl eframe::App for App {
         ctx.data_mut(|map| {
             map.insert_persisted(Id::new("selected_mon"), None::<Option<SelectedMon>>)
         });
-        
+
         render_menu_bar(self, ctx);
         render_navigation_bar(self, ctx);
         render_screen(self, ctx);
@@ -170,6 +176,7 @@ fn render_navigation_bar(app: &mut App, ctx: &egui::Context) {
                     loaded: false,
                     containers: vec![],
                 }),
+                Screen::Settings(SettingsScreen::new())
             ] {
                 let text: RichText = RichText::new(screen.as_str()).size(18.0);
 
