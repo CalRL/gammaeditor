@@ -1,3 +1,4 @@
+use std::io::Error;
 use crate::logger::Logger;
 use crate::pkmn::Move;
 
@@ -88,7 +89,7 @@ impl Generator {
 }
 
 #[cfg(target_os = "windows")]
-fn run_generator(settings: Generator) -> std::io::Result<()> {
+fn run_generator(_settings: Generator) -> std::io::Result<()> {
     use std::{env, fs, process::Command};
 
     let path = env::temp_dir().join("generator.exe");
@@ -102,6 +103,9 @@ fn run_generator(settings: Generator) -> std::io::Result<()> {
 }
 
 #[cfg(not(target_os = "windows"))]
-fn run_generator() {
-    Logger::info(format!("Generator not available on this platform: {}", std::env::consts::OS.to_string()));
+fn run_generator(_settings: Generator) -> std::io::Result<()> {
+    let msg = format!("Generator not available on this platform: {}", std::env::consts::OS.to_string());
+
+    Logger::info(msg.clone());
+    Ok(())
 }
