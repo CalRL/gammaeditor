@@ -5,3 +5,4 @@
 - Added icon in singlescreen
 - Added shiny toggle
 - Images are now loaded from cache on startup (rather than loaded at runtime)
+- Stopped terminal from popping up on start.
