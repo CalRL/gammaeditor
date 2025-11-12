@@ -1,6 +1,6 @@
-use std::io::Error;
 use crate::logger::Logger;
 use crate::pkmn::Move;
+use std::io::Error;
 
 #[cfg(target_os = "windows")]
 pub const GENERATOR_BIN: &[u8] = include_bytes!("../../bin/generator.exe");
@@ -62,10 +62,22 @@ impl Generator {
             args.push(format!("--form {}", f));
         }
         if let Some(ivs) = &self.ivs {
-            args.push(format!("--ivs {}", ivs.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(",")));
+            args.push(format!(
+                "--ivs {}",
+                ivs.iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
         }
         if let Some(evs) = &self.evs {
-            args.push(format!("--evs {}", evs.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(",")));
+            args.push(format!(
+                "--evs {}",
+                evs.iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
         }
         if let Some(moves) = &self.moves {
             for (i, m) in moves.iter().enumerate() {
@@ -95,16 +107,17 @@ fn run_generator(_settings: Generator) -> std::io::Result<()> {
     let path = env::temp_dir().join("generator.exe");
     fs::write(&path, GENERATOR_BIN)?;
 
-    Command::new(&path)
-        .arg("--example")
-        .spawn()?;
+    Command::new(&path).arg("--example").spawn()?;
 
     Ok(())
 }
 
 #[cfg(not(target_os = "windows"))]
 fn run_generator(_settings: Generator) -> std::io::Result<()> {
-    let msg = format!("Generator not available on this platform: {}", std::env::consts::OS.to_string());
+    let msg = format!(
+        "Generator not available on this platform: {}",
+        std::env::consts::OS.to_string()
+    );
 
     Logger::info(msg.clone());
     Ok(())

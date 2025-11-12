@@ -1,8 +1,8 @@
 use eframe::NativeOptions;
+use egui::TextBuffer;
 use gammaeditor::app::App;
 use gammaeditor::logger::Logger;
 use std::process;
-use egui::TextBuffer;
 
 fn main() {
     Logger::init().unwrap();

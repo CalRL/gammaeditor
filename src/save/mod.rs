@@ -8,6 +8,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 pub mod pokemon;
 pub mod utils;
+pub mod backup;
 
 pub type SharedGvas = Arc<RwLock<GvasFile>>;
 pub type SharedState = Arc<RwLock<AppState>>;

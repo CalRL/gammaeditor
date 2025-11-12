@@ -1,9 +1,8 @@
 use crate::app::Asset;
+use crate::save::pokemon::pokemon_classes::parse_class;
 use crate::save::pokemon::{correct_name, StorageType};
-use crate::ui::screen::render_pokemon_path;
 use egui::{Color32, ColorImage, Context, TextureHandle, Vec2};
 use std::collections::HashMap;
-use crate::save::pokemon::pokemon_classes::parse_class;
 
 #[derive(Clone, Debug)]
 pub struct ImageContainer {

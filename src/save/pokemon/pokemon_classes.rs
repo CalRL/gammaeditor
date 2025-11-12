@@ -61,8 +61,8 @@ impl<'a> PokemonClasses<'a> {
 
     pub fn classes(&self) -> Option<Vec<&String>> {
         let array: &ArrayProperty = match self.property.get_array() {
-            None => {return None}
-            Some(arr) => { arr }
+            None => return None,
+            Some(arr) => arr,
         };
         let mut strings: Vec<&String> = Vec::new();
         match array {
@@ -75,16 +75,13 @@ impl<'a> PokemonClasses<'a> {
                         }
                         _ => {}
                     }
-
                 }
-
             }
             _ => {}
         };
 
         Some(strings)
     }
-
 
     pub fn parse_class(&self, class: &str) -> Option<String> {
         parse_class(class)

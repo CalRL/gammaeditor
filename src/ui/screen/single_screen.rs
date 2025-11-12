@@ -327,8 +327,8 @@ impl ScreenTrait for SingleScreen {
         let idx = match app.selected_mon.clone() {
             None => {
                 Logger::info("Failed to get mon.idx");
-                return
-            },
+                return;
+            }
             Some(sel) => sel.index,
         };
 
@@ -337,8 +337,8 @@ impl ScreenTrait for SingleScreen {
             Some(l) => match l.get_shiny_at(idx) {
                 None => {
                     Logger::info("Failed to get is_shiny");
-                    return
-                },
+                    return;
+                }
                 Some(s) => s.clone(),
             },
         };
@@ -346,8 +346,8 @@ impl ScreenTrait for SingleScreen {
         let party = match PokemonInfo::new_party(gvas_file) {
             None => {
                 Logger::info("Failed to get mon name");
-                return
-            },
+                return;
+            }
             Some(c) => c,
         };
 
@@ -414,7 +414,10 @@ impl ScreenTrait for SingleScreen {
             ivs,
         });
         self.loaded = true;
-        Logger::info(format!("Loaded info in SingleScreen for: {:?}", parse_class(class.as_str())));
+        Logger::info(format!(
+            "Loaded info in SingleScreen for: {:?}",
+            parse_class(class.as_str())
+        ));
     }
 
     fn ui(&mut self, ui: &mut Ui, app: &mut App) -> ScreenAction {

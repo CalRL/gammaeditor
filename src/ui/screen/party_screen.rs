@@ -4,15 +4,15 @@ use crate::save::pokemon::pokemon_classes::{class_at, parse_class, PokemonClasse
 use crate::save::pokemon::shiny_list::get_shiny_list;
 use crate::save::pokemon::{correct_name, SelectedMon, StorageType};
 use crate::ui::image::ImageContainer;
-use crate::ui::{render_image, render_texture};
 use crate::ui::screen::single_screen::{SingleScreen, SingleScreenBuffer};
 use crate::ui::screen::{render_pokemon_path, Screen, ScreenAction, ScreenTrait};
+use crate::ui::{render_image, render_texture};
+use crate::unwrap_gvas;
 use crate::utils::set_data_persisted;
 use egui::{CursorIcon, Direction, Image, Layout, Response, RichText, Sense, TextBuffer, Ui};
 use gvas::properties::Property;
 use gvas::GvasFile;
 use std::ops::Deref;
-use crate::unwrap_gvas;
 
 #[derive(Clone)]
 pub struct PartyScreen {
@@ -33,7 +33,7 @@ impl ScreenTrait for PartyScreen {
                 Logger::error("Failed to create classes wrapper");
                 return;
             }
-            Some(w) => {w}
+            Some(w) => w,
         };
 
         let classes: Vec<&String> = match wrapper.classes() {
@@ -41,9 +41,7 @@ impl ScreenTrait for PartyScreen {
                 Logger::error("Failed to get names");
                 return;
             }
-            Some(v) => {
-                v
-            }
+            Some(v) => v,
         };
 
         let Some(parsed) = wrapper.parse_classes(classes) else {
@@ -70,7 +68,7 @@ impl ScreenTrait for PartyScreen {
                     Logger::info(format!("Failed to get parsed at index {}", i));
                     continue;
                 }
-                Some(class) => {class.clone()}
+                Some(class) => class.clone(),
             };
             let shiny = shiny_vec.get(i).unwrap().clone();
 
@@ -101,10 +99,8 @@ impl ScreenTrait for PartyScreen {
 
                 for option in self.containers.iter() {
                     let container: &ImageContainer = match option {
-                        None => {
-                            continue
-                        },
-                        Some(p) => p
+                        None => continue,
+                        Some(p) => p,
                     };
                     if let Some(tex) = app.image_cache.get(ui.ctx(), container.path.as_str()) {
                         let image: Image = render_texture(tex).sense(Sense::click());
@@ -137,7 +133,6 @@ impl ScreenTrait for PartyScreen {
                     } else {
                         Logger::info(format!("No such image: {}", container.path.as_str()));
                     }
-
                 }
             });
         });

@@ -59,6 +59,7 @@ impl SelectedMon {
 pub fn correct_name(name: String) -> String {
     match name.as_str() {
         "Metacross" => "Metagross",
-        other => other
-    }.to_string()
+        other => other,
+    }
+    .to_string()
 }
