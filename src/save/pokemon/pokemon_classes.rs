@@ -59,7 +59,42 @@ impl<'a> PokemonClasses<'a> {
         class
     }
 
+    pub fn classes(&self) -> Option<Vec<&String>> {
+        let array: &ArrayProperty = match self.property.get_array() {
+            None => {return None}
+            Some(arr) => { arr }
+        };
+        let mut strings: Vec<&String> = Vec::new();
+        match array {
+            ArrayProperty::Properties { properties, .. } => {
+                for i in properties.iter() {
+                    match i {
+                        Property::ObjectProperty(prop) => {
+                            let val = &prop.value;
+                            strings.push(val);
+                        }
+                        _ => {}
+                    }
+
+                }
+
+            }
+            _ => {}
+        };
+
+        Some(strings)
+    }
+
+
     pub fn parse_class(&self, class: &str) -> Option<String> {
         parse_class(class)
+    }
+    pub fn parse_classes(&self, classes: Vec<&String>) -> Option<Vec<String>> {
+        let mut class_vec = Vec::new();
+        for class in classes.iter() {
+            let parsed = self.parse_class(class)?;
+            class_vec.push(parsed)
+        }
+        Some(class_vec)
     }
 }
