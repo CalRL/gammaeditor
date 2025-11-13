@@ -6,3 +6,5 @@
 - Added shiny toggle
 - Images are now loaded from cache on startup (rather than loaded at runtime)
 - Stopped terminal from popping up on start.
+- Added App icon
+- Added App icon and version in titlebar
