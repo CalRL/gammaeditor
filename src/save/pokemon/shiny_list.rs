@@ -1,6 +1,4 @@
-use crate::utils::custom_struct::get_struct_property_at_idx_mut;
 use gvas::properties::array_property::ArrayProperty;
-use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
 use gvas::properties::Property;
 use gvas::GvasFile;
 

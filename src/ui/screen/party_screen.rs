@@ -2,17 +2,16 @@ use crate::app::{App, GVAS_FILE};
 use crate::logger::Logger;
 use crate::save::pokemon::pokemon_classes::{class_at, parse_class, PokemonClasses};
 use crate::save::pokemon::shiny_list::get_shiny_list;
-use crate::save::pokemon::{correct_name, SelectedMon, StorageType};
+use crate::save::pokemon::{SelectedMon, StorageType};
 use crate::ui::image::ImageContainer;
 use crate::ui::screen::single_screen::{SingleScreen, SingleScreenBuffer};
-use crate::ui::screen::{render_pokemon_path, Screen, ScreenAction, ScreenTrait};
-use crate::ui::{render_image, render_texture};
+use crate::ui::screen::{Screen, ScreenAction, ScreenTrait};
+use crate::ui::render_texture;
 use crate::unwrap_gvas;
 use crate::utils::set_data_persisted;
-use egui::{CursorIcon, Direction, Image, Layout, Response, RichText, Sense, TextBuffer, Ui};
+use egui::{CursorIcon, Direction, Image, Layout, RichText, Sense, TextBuffer, Ui};
 use gvas::properties::Property;
 use gvas::GvasFile;
-use std::ops::Deref;
 
 #[derive(Clone)]
 pub struct PartyScreen {

@@ -1,7 +1,6 @@
 use crate::app::App;
 use crate::ui::screen::{ScreenAction, ScreenTrait};
 use egui::Ui;
-use gvas::GvasFile;
 
 #[derive(Clone, Debug)]
 pub struct HomeScreen;

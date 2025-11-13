@@ -1,6 +1,5 @@
 use std::fs;
 use std::fs::File;
-use std::path::Path;
 use egui::{ScrollArea, TextEdit, Ui};
 use crate::app::App;
 use crate::logger::{get_log_path, Logger};
@@ -43,7 +42,7 @@ impl ScreenTrait for SettingsScreen {
     }
 
     fn ui(&mut self, ui: &mut Ui, app: &mut App) -> ScreenAction {
-       let mut action = ScreenAction::None;
+       let action = ScreenAction::None;
         ui.heading("Settings");
 
         ui.add_space(5.0);

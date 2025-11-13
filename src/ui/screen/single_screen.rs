@@ -7,19 +7,15 @@ use crate::save::pokemon::pokemon_classes::{parse_class, PokemonClasses};
 use crate::save::pokemon::pokemon_info::{InfoStruct, PokemonInfo, PokemonInfoMut};
 use crate::save::pokemon::shiny_list::{ShinyList, ShinyListMut};
 use crate::save::pokemon::{correct_name, StorageType};
-use crate::ui::image::ImageContainer;
-use crate::ui::screen::{get_images_path, render_pokemon_path, Reload, ScreenAction, ScreenTrait};
-use crate::ui::{render_image_container, render_texture};
+use crate::ui::screen::{get_images_path, Reload, ScreenAction, ScreenTrait};
+use crate::ui::render_texture;
 use crate::{try_gvas_read, try_gvas_write, unwrap_gvas};
 use eframe::emath::Vec2;
 use eframe::epaint::Color32;
-use egui::Shape::Path;
-use egui::{Button, Image, Response, RichText, Sense, TextEdit, Ui};
+use egui::{Button, Image, Response, Sense, TextEdit, Ui};
 use egui_extras::{Column, TableBuilder, TableRow};
 use gvas::GvasFile;
-use rfd::MessageDialogResult::No;
 use std::collections::HashMap;
-use std::fmt::format;
 use std::sync::RwLockWriteGuard;
 
 #[derive(Clone, Debug)]
@@ -230,7 +226,7 @@ impl SingleScreen {
                     ui.heading("Stats");
                 });
             })
-            .body(|mut body| {
+            .body(|body| {
                 // body.row(30.0, |mut row| {
                 //     row.col(|ui| {
                 //         ui.label("CurrentHP");
@@ -465,7 +461,7 @@ impl ScreenTrait for SingleScreen {
                     );
 
                     if res.clicked() {
-                        let mut guard = match try_gvas_write!(GVAS_FILE) {
+                        let guard = match try_gvas_write!(GVAS_FILE) {
                             None => {
                                 return ScreenAction::None;
                             }

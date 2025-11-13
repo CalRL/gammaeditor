@@ -2,17 +2,14 @@ use crate::logger::Logger;
 use crate::pkmn::stats::{StatStruct, Stats};
 use crate::property::traits::{NamespacedValue, PropertyPath, StartsWith};
 use crate::utils::custom_struct::{
-    get_struct_at_idx, get_struct_at_idx_mut, get_struct_property_at_idx, CustomStruct,
+    get_struct_at_idx_mut, get_struct_property_at_idx,
 };
-use gvas::properties::array_property::ArrayProperty;
 use gvas::properties::int_property::BytePropertyValue;
 use gvas::properties::struct_property::StructProperty;
 use gvas::properties::text_property::FTextHistory;
 use gvas::properties::Property;
 use gvas::GvasFile;
-use rfd::MessageDialogResult::No;
 use std::collections::HashMap;
-use std::fmt::format;
 
 pub fn get_is_fainted(struct_property: &StructProperty) -> Option<bool> {
     let is_fainted: &Vec<Property> = struct_property.get_starts_with("isFainted")?;

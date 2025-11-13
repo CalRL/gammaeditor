@@ -1,8 +1,5 @@
 use egui::util::id_type_map::SerializableAny;
 use egui::{Context, Id};
-use gvas::GvasFile;
-use std::cell::OnceCell;
-use std::sync::{Arc, RwLock};
 
 pub mod custom_struct;
 pub mod generator;

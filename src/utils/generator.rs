@@ -1,6 +1,5 @@
 use crate::logger::Logger;
 use crate::pkmn::Move;
-use std::io::Error;
 
 #[cfg(target_os = "windows")]
 pub const GENERATOR_BIN: &[u8] = include_bytes!("../../bin/generator.exe");

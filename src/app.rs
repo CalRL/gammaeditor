@@ -1,4 +1,4 @@
-use crate::logger::{get_log_file, get_log_path, Logger};
+use crate::logger::Logger;
 use crate::save::pokemon::SelectedMon;
 use crate::ui::image::ImageCache;
 use crate::ui::menu::render_menu_bar;
@@ -15,8 +15,6 @@ use rust_embed::Embed;
 use std::fs::File;
 use std::io::{Cursor, Write};
 use std::sync::{Arc, OnceLock, RwLock, RwLockReadGuard};
-use eframe::IntegrationInfo;
-use egui::util::undoer::Settings;
 use crate::ui::screen::settings_screen::SettingsScreen;
 
 pub static GVAS_FILE: OnceLock<Arc<RwLock<GvasFile>>> = OnceLock::<Arc<RwLock<GvasFile>>>::new();

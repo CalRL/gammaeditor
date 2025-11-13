@@ -1,13 +1,10 @@
-use crate::gvas;
 use crate::pkmn::stats::{IVSpread, IVs};
-use crate::property::traits::StartsWith;
 use crate::save::pokemon::StorageType;
 use crate::utils::custom_struct::{get_struct_property_at_idx, get_struct_property_at_idx_mut};
 use gvas::properties::int_property::IntProperty;
 use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
 use gvas::properties::Property;
 use gvas::GvasFile;
-use std::ops::Index;
 
 pub fn get_ivs<'a>(properties: &'a StructProperty) -> Option<Vec<&'a i32>> {
     match &properties.value {

@@ -9,7 +9,6 @@ use crate::ui::screen::home_screen::HomeScreen;
 use egui::{CentralPanel, Ui};
 use party_screen::PartyScreen;
 use single_screen::SingleScreen;
-use std::fmt::format;
 use crate::ui::screen::settings_screen::SettingsScreen;
 
 #[derive(Clone)]

@@ -5,12 +5,10 @@ use crate::ui::screen::party_screen::PartyScreen;
 use crate::ui::screen::Screen;
 use egui::containers::menu;
 use egui::{Context, ViewportCommand};
-use gvas::error::Error;
 use gvas::game_version::GameVersion;
 use gvas::GvasFile;
 use std::fs::File;
-use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::path::PathBuf;
 
 mod buttons;
 pub mod discord;

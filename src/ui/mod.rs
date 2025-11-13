@@ -1,8 +1,6 @@
-use crate::app::Asset;
 use crate::ui::image::ImageContainer;
 use egui::load::SizedTexture;
 use egui::{Color32, Image, TextureHandle, Vec2};
-use rust_embed::EmbeddedFile;
 
 pub(crate) mod image;
 pub mod menu;

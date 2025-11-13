@@ -1,11 +1,8 @@
-use chrono::{DateTime, Local, Utc};
-use std::env::current_dir;
+use chrono::{DateTime, Utc};
 use std::fs::{File, OpenOptions};
 use std::io::Write;
-use std::path::PathBuf;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{mpsc, Mutex, OnceLock};
-use std::time::SystemTime;
 use std::{io, thread};
 
 pub fn info(message: &str) {

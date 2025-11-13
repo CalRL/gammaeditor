@@ -22,7 +22,6 @@
 // 23 careful
 // ENUM_Natures::NewEnumerator24 quirky
 
-use crate::pkmn::natures::Nature::{Adamant, Brave, Docile, Hardy, Lonely};
 use std::str::FromStr;
 
 /// Returns nature as a lowercase string
