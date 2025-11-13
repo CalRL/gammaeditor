@@ -1,6 +1,6 @@
 use std::fs;
 use std::fs::File;
-use egui::{ScrollArea, TextEdit, Ui};
+use egui::{Button, CollapsingHeader, ScrollArea, TextEdit, Ui};
 use crate::app::App;
 use crate::logger::{get_log_path, Logger};
 use crate::ui::screen::{ScreenAction, ScreenTrait};
@@ -46,19 +46,22 @@ impl ScreenTrait for SettingsScreen {
         ui.heading("Settings");
 
         ui.add_space(5.0);
+
         if let Some(logs) = &mut self.log_contents {
-            ScrollArea::both()
-                .id_source("log_viewer")
-                .auto_shrink([false, false])
-                .show(ui, |ui| {
-                    ui.add(
-                        TextEdit::multiline(logs)
-                            .code_editor()
-                            .interactive(false)
-                            .desired_width(f32::INFINITY)
-                            .frame(true)
-                    );
-                });
+            let header = CollapsingHeader::new("View logs");
+            header.show(ui, |ui| {
+                ScrollArea::both()
+                    .auto_shrink([false, false])
+                    .show(ui, |ui| {
+                        ui.add(
+                            TextEdit::multiline(logs)
+                                .code_editor()
+                                .interactive(false)
+                                .desired_width(f32::INFINITY)
+                                .frame(true)
+                        );
+                    });
+            });
         }
 
         action
