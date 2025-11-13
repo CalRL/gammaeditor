@@ -7,16 +7,23 @@ use crate::save::pokemon::pokemon_classes::{parse_class, PokemonClasses};
 use crate::save::pokemon::pokemon_info::{InfoStruct, PokemonInfo, PokemonInfoMut};
 use crate::save::pokemon::shiny_list::{ShinyList, ShinyListMut};
 use crate::save::pokemon::{correct_name, StorageType};
-use crate::ui::screen::{get_images_path, Reload, ScreenAction, ScreenTrait};
+use crate::ui::screen::{get_images_path, Reload, Screen, ScreenAction, ScreenTrait};
 use crate::ui::render_texture;
-use crate::{try_gvas_read, try_gvas_write, unwrap_gvas};
+use crate::{do_action, try_gvas_read, try_gvas_write, unwrap_gvas, unwrap_gvas_mut};
 use eframe::emath::Vec2;
 use eframe::epaint::Color32;
-use egui::{Button, Image, Response, Sense, TextEdit, Ui};
+use egui::{Button, ComboBox, Image, Response, Sense, TextEdit, Ui};
 use egui_extras::{Column, TableBuilder, TableRow};
 use gvas::GvasFile;
 use std::collections::HashMap;
+use std::fmt::format;
 use std::sync::RwLockWriteGuard;
+use egui::X11WindowType::DropdownMenu;
+use serde::de::Unexpected::Enum;
+use crate::pkmn::ball::PokeBall;
+use crate::pkmn::gender::{get_gender_from_enum, Gender};
+use crate::save::pokemon::caught_ball::{CaughtBall, CaughtBallMut};
+use crate::save::pokemon::pokemon_gender::{PokemonGender, PokemonGenderMut};
 
 #[derive(Clone, Debug)]
 pub struct SingleScreen {
@@ -37,9 +44,11 @@ pub struct SingleMon {
     class: String,
     storage_type: StorageType,
     is_shiny: bool,
+    gender: Gender,
     name: String,
     stats: StatStruct,
     ivs: IVSpread,
+    ball: PokeBall
 }
 
 #[derive(Default, Clone, Debug)]
@@ -313,6 +322,81 @@ impl SingleScreen {
             // todo: refresh after successful save
         }
     }
+
+    fn render_ball_combo(app: &mut App, data: &SingleMon, ui: &mut Ui) -> ScreenAction {
+        let mut val = data.ball.clone();
+        let ball_path = format!("shiny/Dragonite.png");
+        if let Some(tex) = app.image_cache.get(ui.ctx(), ball_path.as_str()) {
+            ui.add(Image::new(tex).fit_to_exact_size(Vec2::from([2.0, 2.0])));
+        }
+        ComboBox::from_label("Ball")
+            .selected_text(val.as_str())
+            .show_ui(ui, |ui| {
+                ui.selectable_value(&mut val, PokeBall::PokeBall, "Pokeball");
+                ui.selectable_value(&mut val, PokeBall::GreatBall, "Great ball");
+                ui.selectable_value(&mut val, PokeBall::UltraBall, "Ultra ball");
+            });
+
+        if data.ball.clone() != val {
+            let mut guard = match try_gvas_write!(GVAS_FILE) {
+                None => {
+                    return ScreenAction::None
+                }
+                Some(guard) => { guard }
+            };
+            let gvas = &mut *guard;
+            if let Some(mut wrapper) = CaughtBallMut::new_party(gvas) {
+                match wrapper.set_ball_at(val.clone(), data.index) {
+                    Ok(_) => {
+                        Logger::info(format!("Set ball to {:?} for {}", val, data.class));
+                        return ScreenAction::Reload;
+                    }
+                    Err(_) => {}
+                };
+            };
+        }
+        ScreenAction::None
+    }
+
+    fn render_gender_combo(data: &SingleMon, ui: &mut Ui) -> ScreenAction {
+        let mut val: Gender = data.gender.clone();
+        ComboBox::from_label("Gender")
+            .selected_text(val.as_str())
+            .show_ui(ui, |ui| {
+                ui.selectable_value(&mut val, Gender::Male, "Male");
+                ui.selectable_value(&mut val, Gender::Female, "Female");
+                ui.selectable_value(&mut val, Gender::Unknown, "Unknown");
+            }
+            );
+
+        if data.gender != val {
+            let mut guard: RwLockWriteGuard<GvasFile> = match try_gvas_write!(GVAS_FILE) {
+                None => {
+                    Logger::error("Failed to get gvas to update gender");
+                    return ScreenAction::None
+                }
+                Some(guard) => {
+                    guard
+                }
+            };
+
+            let gvas = &mut *guard;
+
+            if let Some(mut wrapper) = PokemonGenderMut::new_party(gvas) {
+                match wrapper.set_gender_at(val.clone(), data.index) {
+                    Ok(_) => {
+                        Logger::info(format!("Updated gender to {} for: {}", val.as_str(), data.class))
+                    }
+                    Err(e) => {
+                        Logger::error(e)
+                    }
+                };
+            }
+
+            return ScreenAction::Reload;
+        }
+        ScreenAction::None
+    }
 }
 
 impl ScreenTrait for SingleScreen {
@@ -399,15 +483,51 @@ impl ScreenTrait for SingleScreen {
                 }
             }
         };
+        let gender_wrapper = match PokemonGender::new_party(gvas_file) {
+            None => {
+                Logger::error("Failed to get gender wrapper");
+                return;
+            }
+            Some(w) => w
+        };
+
+        let gender = match gender_wrapper.get_gender_at(idx.clone()) {
+            None => {
+                Logger::error(format!("Failed to get gender at index: {}", idx.clone()));
+                return;
+            }
+            Some(g) => {
+                Logger::info(format!("Gender: {}", g.as_str()));
+                g
+            }
+        };
+
+        let wrapper: CaughtBall = match CaughtBall::new_party(gvas_file) {
+            None => {
+                Logger::error("Failed to get caught ball wrapper");
+                return;
+            }
+            Some(w) => w
+        };
+
+        let ball: PokeBall = match wrapper.get_caught_ball_at(idx.clone()) {
+            None => {
+                Logger::error(format!("Failed to get ball at index: {}", idx.clone()));
+                return;
+            }
+            Some(b) => b
+        };
 
         self.mon_data = Some(SingleMon {
             index: idx,
             storage_type: StorageType::PARTY,
             class: class.clone(),
+            gender,
             is_shiny,
             name: name.clone(),
             stats,
             ivs,
+            ball,
         });
         self.loaded = true;
         Logger::info(format!(
@@ -489,41 +609,52 @@ impl ScreenTrait for SingleScreen {
                         return flip_shiny(guard, data);
                     }
                 }
+                do_action!(Self::render_ball_combo(app, data, ui), self);
+
                 ScreenAction::None
+
             });
             if let ScreenAction::Reload = shiny.inner {
                 self.loaded = false;
                 return ScreenAction::Reload;
             }
-            ui.label("Nickname");
-            let mut display: String = data.name.clone();
-            let res: Response = ui.add(TextEdit::singleline(&mut display).desired_width(200.0));
-            if res.changed() {
-                let mut guard = match try_gvas_write!(GVAS_FILE) {
-                    None => {
-                        return ScreenAction::None;
+            let perso = ui.horizontal(|ui| {
+                let mut action = ScreenAction::None;
+                ui.label("Nickname");
+                let mut display: String = data.name.clone();
+                let res: Response = ui.add(TextEdit::singleline(&mut display).desired_width(200.0));
+                if res.changed() {
+                    let mut guard = match try_gvas_write!(GVAS_FILE) {
+                        None => {
+                            return ScreenAction::None;
+                        }
+                        Some(g) => g,
+                    };
+                    return match PokemonInfoMut::new_party(&mut *guard) {
+                        None => {
+                            ScreenAction::None
+                        }
+                        Some(mut party) => {
+                            party.set_name(data.index.clone(), display);
+                            ScreenAction::Reload
+                        }
                     }
-                    Some(g) => g,
-                };
-                match PokemonInfoMut::new_party(&mut *guard) {
-                    None => {
-                        return ScreenAction::None;
-                    }
-                    Some(mut party) => {
-                        party.set_name(data.index.clone(), display);
-                        return ScreenAction::Reload;
-                    }
-                };
-            }
+                }
+
+                do_action!(Self::render_gender_combo(data, ui), self);
+
+                action
+            });
+            do_action!(perso.inner, self);
         }
 
+
         if let Some(action) = self.iv_table(ui) {
-            return action;
+            do_action!(action, self);
         }
         ScreenAction::None
     }
 }
-
 impl Reload for SingleScreen {
     fn reload(&mut self, app: &mut App) {
         self.loaded = false;

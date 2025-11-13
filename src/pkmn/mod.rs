@@ -4,6 +4,7 @@ pub mod gender;
 pub mod natures;
 pub mod stats;
 pub mod types;
+pub mod ball;
 
 #[derive(Debug, Serialize, Clone)]
 pub struct EnrichedMon {

@@ -64,7 +64,7 @@ impl ScreenTrait for PartyScreen {
         for i in 0..5 {
             let class: String = match parsed.get(i) {
                 None => {
-                    Logger::info(format!("Failed to get parsed at index {}", i));
+                    Logger::info(format!("No party mon at index {}", i));
                     continue;
                 }
                 Some(class) => class.clone(),
@@ -75,7 +75,6 @@ impl ScreenTrait for PartyScreen {
             container_vec.push(container);
         }
 
-        Logger::info(format!("{:?}", container_vec));
         self.containers = container_vec;
     }
 

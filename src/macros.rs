@@ -123,3 +123,12 @@ macro_rules! try_gvas_write {
         }
     }};
 }
+#[macro_export]
+macro_rules! do_action {
+    ($action:expr, $self:expr) => {
+        if matches!($action, ScreenAction::Reload) {
+            $self.loaded = false;
+            return ScreenAction::Reload;
+        }
+    };
+}

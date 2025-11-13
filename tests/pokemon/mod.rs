@@ -9,3 +9,4 @@ pub mod pokemon_id;
 mod pokemon_info;
 mod pp_moves_lists;
 mod shiny_list;
+mod caught_ball;
