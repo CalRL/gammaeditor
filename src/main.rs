@@ -1,17 +1,16 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use eframe::NativeOptions;
-use egui::{TextBuffer, ViewportBuilder};
+use egui::{IconData, ViewportBuilder};
 use gammaeditor::app::App;
 use gammaeditor::logger::Logger;
-use std::process;
 use std::sync::Arc;
 
 fn main() {
     Logger::init().unwrap();
-    let mut builder = ViewportBuilder::default();
+    let mut builder: ViewportBuilder = ViewportBuilder::default();
     let icon_bytes = include_bytes!("../images/pokeball.ico");
-    let icon = eframe::icon_data::from_png_bytes(icon_bytes).unwrap();
+    let icon: IconData = eframe::icon_data::from_png_bytes(icon_bytes).unwrap();
     builder.icon = Some(Arc::new(icon));
     let native_options: NativeOptions = NativeOptions {
         viewport: builder,
