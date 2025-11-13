@@ -1,0 +1,21 @@
+name: Check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check-windows:
+    name: Cargo check
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cargo check
+        run: cargo check --release
+
+      - name: Cargo test
+        run: cargo test --release
