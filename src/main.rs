@@ -1,37 +1,32 @@
-use std::process;
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 use eframe::NativeOptions;
+use egui::{TextBuffer, ViewportBuilder};
 use gammaeditor::app::App;
 use gammaeditor::logger::Logger;
-
+use std::process;
+use std::sync::Arc;
 
 fn main() {
     Logger::init().unwrap();
+    let mut builder = ViewportBuilder::default();
+    let icon_bytes = include_bytes!("../images/pokeball.ico");
+    let icon = eframe::icon_data::from_png_bytes(icon_bytes).unwrap();
+    builder.icon = Some(Arc::new(icon));
+    let native_options: NativeOptions = NativeOptions {
+        viewport: builder,
+        ..Default::default()
+    };
 
-    let native_options: NativeOptions = NativeOptions::default();
-    let app_name: &str = "GammaEditor";
+    let app_name: String = format!("GammaEditor {}", env!("CARGO_PKG_VERSION"));
 
     eframe::run_native(
-        app_name,
+        app_name.as_str(),
         native_options,
         Box::new(|cc| {
             egui_extras::install_image_loaders(&cc.egui_ctx);
             Ok(Box::new(App::new(cc)))
-        })
+        }),
     )
-        .expect("How did we get here?");
-}
-
-
-fn run_generator(args: Vec<String>) -> Result<String, String> {
-    println!("Starting generator");
-
-    let output = process::Command::new("bin/generator.exe")
-        .args(args)
-        .output()
-        .map_err(|e| format!("Failed to run generator.exe: {e}"))?;
-
-    if !output.status.success() {
-        return Err(String::from_utf8_lossy(&output.stderr).to_string());
-    }
-    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    .expect("How did we get here?");
 }

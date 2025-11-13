@@ -9,7 +9,7 @@ pub enum Stats {
     DEF,
     SATK,
     SDEF,
-    SPEED
+    SPEED,
 }
 
 impl Stats {
@@ -21,8 +21,9 @@ impl Stats {
             Stats::DEF,
             Stats::SATK,
             Stats::SDEF,
-            Stats::SPEED
-        ].into_iter()
+            Stats::SPEED,
+        ]
+        .into_iter()
     }
 
     pub fn as_str(&self) -> &str {
@@ -40,7 +41,7 @@ impl Stats {
 
 #[derive(Clone, Debug)]
 pub struct StatStruct {
-    pub values: HashMap<Stats, f64>
+    pub values: HashMap<Stats, f64>,
 }
 
 impl FromStr for Stats {
@@ -67,18 +68,18 @@ pub enum IVs {
     DEF,
     SATK,
     SDEF,
-    SPEED
+    SPEED,
 }
 
 impl IVs {
     pub fn as_str(&self) -> &str {
         match self {
-            IVs::HP => {"HP"}
-            IVs::ATK => {"ATK"}
-            IVs::DEF => {"DEF"}
-            IVs::SATK => {"SATK"}
-            IVs::SDEF => {"SDEF"}
-            IVs::SPEED => {"SPEED"}
+            IVs::HP => "HP",
+            IVs::ATK => "ATK",
+            IVs::DEF => "DEF",
+            IVs::SATK => "SATK",
+            IVs::SDEF => "SDEF",
+            IVs::SPEED => "SPEED",
         }
     }
     pub fn iter() -> impl Iterator<Item = IVs> {
@@ -88,23 +89,23 @@ impl IVs {
             IVs::DEF,
             IVs::SATK,
             IVs::SDEF,
-            IVs::SPEED
-        ].into_iter()
+            IVs::SPEED,
+        ]
+        .into_iter()
     }
 
     pub fn from_stat(stat: Stats) -> Option<Self> {
         match stat {
-            Stats::MaxHp => { Some(IVs::HP) }
-            Stats::ATK => { Some(IVs::ATK) }
-            Stats::DEF => { Some(IVs::DEF) }
-            Stats::SATK => { Some(IVs::SATK) }
-            Stats::SDEF => { Some(IVs::SDEF) }
-            Stats::SPEED => { Some(IVs::SPEED) }
-            _ => None
+            Stats::MaxHp => Some(IVs::HP),
+            Stats::ATK => Some(IVs::ATK),
+            Stats::DEF => Some(IVs::DEF),
+            Stats::SATK => Some(IVs::SATK),
+            Stats::SDEF => Some(IVs::SDEF),
+            Stats::SPEED => Some(IVs::SPEED),
+            _ => None,
         }
     }
 }
-
 
 #[derive(Clone, Debug)]
 pub struct IVSpread {
@@ -119,12 +120,12 @@ pub struct IVSpread {
 impl IVs {
     pub fn get_index(self) -> usize {
         match self {
-            IVs::HP => {0}
-            IVs::ATK => {1}
-            IVs::DEF => {2}
-            IVs::SATK => {3}
-            IVs::SDEF => {4}
-            IVs::SPEED => {5}
+            IVs::HP => 0,
+            IVs::ATK => 1,
+            IVs::DEF => 2,
+            IVs::SATK => 3,
+            IVs::SDEF => 4,
+            IVs::SPEED => 5,
         }
     }
 }

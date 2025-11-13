@@ -1,22 +1,23 @@
-use std::ops::Deref;
 use crate::app::{App, GVAS_FILE};
 use crate::logger::Logger;
-use crate::save::pokemon::pokemon_classes::{class_at, parse_class};
+use crate::save::pokemon::pokemon_classes::{class_at, parse_class, PokemonClasses};
 use crate::save::pokemon::shiny_list::get_shiny_list;
-use crate::save::pokemon::{SelectedMon, StorageType};
-use crate::ui::render_image;
-use crate::ui::screen::{render_pokemon_path, Screen, ScreenAction, ScreenTrait};
+use crate::save::pokemon::{correct_name, SelectedMon, StorageType};
+use crate::ui::image::ImageContainer;
 use crate::ui::screen::single_screen::{SingleScreen, SingleScreenBuffer};
+use crate::ui::screen::{render_pokemon_path, Screen, ScreenAction, ScreenTrait};
+use crate::ui::{render_image, render_texture};
+use crate::unwrap_gvas;
 use crate::utils::set_data_persisted;
-use egui::{CursorIcon, Direction, Layout, Response, RichText, Sense, TextBuffer, Ui};
+use egui::{CursorIcon, Direction, Image, Layout, Response, RichText, Sense, TextBuffer, Ui};
 use gvas::properties::Property;
 use gvas::GvasFile;
-use crate::ui::image::ImageContainer;
+use std::ops::Deref;
 
 #[derive(Clone)]
 pub struct PartyScreen {
     pub(crate) loaded: bool,
-    pub containers: Vec<ImageContainer>,
+    pub containers: Vec<Option<ImageContainer>>,
 }
 
 impl ScreenTrait for PartyScreen {
@@ -24,72 +25,113 @@ impl ScreenTrait for PartyScreen {
         if self.loaded {
             return;
         }
-        
-        let gvas_file: &GvasFile = match app.gvas_file.as_ref() {
-            Some(file) => &file.read().unwrap().to_owned(),
-            None => return,
+
+        let gvas_file: &GvasFile = &*unwrap_gvas!(GVAS_FILE);
+
+        let wrapper: PokemonClasses = match PokemonClasses::new_party(gvas_file) {
+            None => {
+                Logger::error("Failed to create classes wrapper");
+                return;
+            }
+            Some(w) => w,
         };
 
-        let names = match get_names(gvas_file) {
+        let classes: Vec<&String> = match wrapper.classes() {
             None => {
                 Logger::error("Failed to get names");
-                Vec::new()
+                return;
             }
-            Some(n) => {
-                Logger::info_once(n.join(", "));
-                n
-            }
+            Some(v) => v,
         };
-        let arr = gvas_file.properties.get("PartyShinyList").unwrap().get_array().unwrap();
+
+        let Some(parsed) = wrapper.parse_classes(classes) else {
+            Logger::error("Failed to parse classes");
+            return;
+        };
+
+        let arr = gvas_file
+            .properties
+            .get("PartyShinyList")
+            .unwrap()
+            .get_array()
+            .unwrap();
         let shiny_vec = get_shiny_list(arr).unwrap();
 
-        let mut container_vec: Vec<ImageContainer> = Vec::new();
-        for (i, (name, is_shiny)) in names.iter().zip(shiny_vec.iter()).enumerate() {
-            let container = ImageContainer::new_party(name.clone(), is_shiny.clone(), i);
+        if parsed.len() != shiny_vec.len() {
+            return;
+        }
+        Logger::info(format!("Parsed: {:?}", parsed));
+        let mut container_vec: Vec<Option<ImageContainer>> = Vec::new();
+        for i in 0..5 {
+            let class: String = match parsed.get(i) {
+                None => {
+                    Logger::info(format!("Failed to get parsed at index {}", i));
+                    continue;
+                }
+                Some(class) => class.clone(),
+            };
+            let shiny = shiny_vec.get(i).unwrap().clone();
 
+            let container = ImageContainer::new_party(class.clone(), shiny, i);
             container_vec.push(container);
         }
 
+        Logger::info(format!("{:?}", container_vec));
         self.containers = container_vec;
-
     }
 
     fn ui(&mut self, ui: &mut Ui, app: &mut App) -> ScreenAction {
-
         let mut action: ScreenAction = ScreenAction::None;
         ui.centered_and_justified(|ui| {
             egui::Grid::new("party-grid").show(ui, |ui| {
                 if GVAS_FILE.get().is_none() {
-                    ui.with_layout(Layout::centered_and_justified(Direction::LeftToRight), |ui| {
-                        let text: RichText = RichText::new("Party not found. Please load a save file to continue.").size(24.0);
-                            ui.add_sized([ui.available_width(), 24.0],egui::Label::new(text));
-                        });
+                    ui.with_layout(
+                        Layout::centered_and_justified(Direction::LeftToRight),
+                        |ui| {
+                            let text: RichText = RichText::new(
+                                "Party not found. Please load a save file to continue.",
+                            )
+                            .size(24.0);
+                            ui.add_sized([ui.available_width(), 24.0], egui::Label::new(text));
+                        },
+                    );
                 }
-                for container in self.containers.iter() {
-                    let res: Response = ui.add(render_image(container.path.clone())).interact(Sense::click());
-                    if res.clicked() {
-                        Logger::info_once(format!("{} Clicked!", container.name));
 
-                        let mon: SelectedMon = SelectedMon {
-                            storage_type: StorageType::PARTY,
-                            index: container.index,
-                        };
-                        set_data_persisted(ui.ctx(), "selected_mon".into(), mon.clone());
+                for option in self.containers.iter() {
+                    let container: &ImageContainer = match option {
+                        None => continue,
+                        Some(p) => p,
+                    };
+                    if let Some(tex) = app.image_cache.get(ui.ctx(), container.path.as_str()) {
+                        let image: Image = render_texture(tex).sense(Sense::click());
+                        let res = ui.add(image);
 
-                        app.selected_mon = Some(mon.clone());
+                        if res.clicked() {
+                            Logger::info_once(format!("{} Clicked!", container.parsed_class));
 
-                        Logger::info_once("Set selected mon");
-                        action = ScreenAction::ChangeTo(Screen::Single(SingleScreen {
-                            loaded: false,
-                            mon_data: None,
-                            buf: SingleScreenBuffer::default(),
-                            gvas_file: None,
-                            needs_refresh: true,
-                        }))
-                    }
+                            let mon: SelectedMon = SelectedMon {
+                                storage_type: StorageType::PARTY,
+                                index: container.index,
+                            };
+                            set_data_persisted(ui.ctx(), "selected_mon".into(), mon.clone());
 
-                    if res.hovered() {
-                        ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
+                            app.selected_mon = Some(mon.clone());
+
+                            Logger::info_once("Set selected mon");
+                            action = ScreenAction::ChangeTo(Screen::Single(SingleScreen {
+                                loaded: false,
+                                mon_data: None,
+                                buf: SingleScreenBuffer::default(),
+                                gvas_file: None,
+                                needs_refresh: true,
+                            }))
+                        }
+
+                        if res.hovered() {
+                            ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
+                        }
+                    } else {
+                        Logger::info(format!("No such image: {}", container.path.as_str()));
                     }
                 }
             });
@@ -101,19 +143,15 @@ impl ScreenTrait for PartyScreen {
 
 pub fn get_names(gvas_file: &GvasFile) -> Option<Vec<String>> {
     let prop: &Property = match gvas_file.properties.get("PartyPokemonClasses") {
-        None => {return None}
-        Some(p) => {p}
+        None => return None,
+        Some(p) => p,
     };
     let arr = prop.get_array()?;
     let mut class_vec: Vec<String> = Vec::new();
     for i in 0..5 {
         let class = match class_at(&arr, i) {
-            None => {
-                continue
-            }
-            Some(c) => {
-                c
-            }
+            None => continue,
+            Some(c) => c,
         };
         class_vec.push(class.clone());
     }
@@ -121,8 +159,8 @@ pub fn get_names(gvas_file: &GvasFile) -> Option<Vec<String>> {
     let mut vec: Vec<String> = Vec::new();
     for i in class_vec.iter() {
         let parsed: String = match parse_class(i.as_str()) {
-            None => {"".to_string()}
-            Some(c) => {c}
+            None => "".to_string(),
+            Some(c) => c,
         };
         vec.push(parsed)
     }

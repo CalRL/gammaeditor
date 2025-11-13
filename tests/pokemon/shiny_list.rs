@@ -1,10 +1,13 @@
-use gammaeditor::save::pokemon::shiny_list::{get_shiny_at, get_shiny_list};
 use crate::pokemon::common::get_gvas;
+use gammaeditor::save::pokemon::shiny_list::{get_shiny_at, get_shiny_list};
 
 #[test]
 fn get_shiny_list_gets_shinies() {
     let gvas = get_gvas();
-    let prop = gvas.properties.get("PartyShinyList").expect("party shiny list");
+    let prop = gvas
+        .properties
+        .get("PartyShinyList")
+        .expect("party shiny list");
 
     let arr = prop.get_array().expect("get array");
     let shinies = get_shiny_list(&arr).expect("get shiny list");
@@ -18,7 +21,10 @@ fn get_shiny_list_gets_shinies() {
 #[test]
 fn get_shiny_gets_shiny() {
     let gvas = get_gvas();
-    let prop = gvas.properties.get("PartyShinyList").expect("party shiny list");
+    let prop = gvas
+        .properties
+        .get("PartyShinyList")
+        .expect("party shiny list");
 
     let arr = prop.get_array().expect("get array");
 

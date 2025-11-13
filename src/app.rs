@@ -1,19 +1,23 @@
-use crate::ui::screen::ScreenTrait;
-use eframe::emath::Align;
-use egui::panel::TopBottomSide;
-use egui::{CursorIcon, Direction, Id, Label, Layout, RichText, Sense};
-use std::fs::File;
-use std::io::{Cursor, Write};
-use std::sync::{Arc, OnceLock, RwLock,  RwLockReadGuard};
-use crate::logger::Logger;
+use crate::logger::{get_log_file, get_log_path, Logger};
 use crate::save::pokemon::SelectedMon;
+use crate::ui::image::ImageCache;
 use crate::ui::menu::render_menu_bar;
-use crate::ui::screen::party_screen::PartyScreen;
 use crate::ui::screen::home_screen::HomeScreen;
-use crate::ui::screen::{render_screen, Screen, };
+use crate::ui::screen::party_screen::PartyScreen;
 use crate::ui::screen::single_screen::SingleScreen;
+use crate::ui::screen::ScreenTrait;
+use crate::ui::screen::{render_screen, Screen};
+use egui::panel::TopBottomSide;
+use egui::{CursorIcon, Id, Label, RichText, Sense};
 use gvas::GvasFile;
 use rfd::MessageLevel;
+use rust_embed::Embed;
+use std::fs::File;
+use std::io::{Cursor, Write};
+use std::sync::{Arc, OnceLock, RwLock, RwLockReadGuard};
+use eframe::IntegrationInfo;
+use egui::util::undoer::Settings;
+use crate::ui::screen::settings_screen::SettingsScreen;
 
 pub static GVAS_FILE: OnceLock<Arc<RwLock<GvasFile>>> = OnceLock::<Arc<RwLock<GvasFile>>>::new();
 
@@ -22,18 +26,17 @@ pub struct App {
     pub gvas_file: Option<Arc<RwLock<GvasFile>>>,
     pub screen: Screen,
     pub selected_mon: Option<SelectedMon>,
+    pub image_cache: ImageCache,
 }
 
 pub struct Screens {
     pub party_screen: PartyScreen,
-    pub single_screen: SingleScreen
+    pub single_screen: SingleScreen,
 }
-
 
 impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-
-        let logger = match Logger::init() {
+        match Logger::init() {
             Ok(_) => {}
             Err(e) => {
                 rfd::MessageDialog::new()
@@ -42,17 +45,26 @@ impl App {
                     .set_description(format!(
                         "Logger failed to start.\
                          Please check the app has sufficient permissions to create files.\
-                         {}", e)
-                    )
+                         {}",
+                        e
+                    ))
                     .show();
                 panic!()
             }
         };
-
+        Logger::info("Loading image cache");
+        let start = chrono::Local::now().timestamp_millis();
+        let mut cache = ImageCache::new();
+        for path in Asset::iter() {
+            cache.get(&cc.egui_ctx, &path);
+        }
+        let end = chrono::Local::now().timestamp_millis();
+        Logger::info(format!("Image cache loaded in: {} ms", end - start));
         Self {
             gvas_file: None,
             screen: Screen::Home(HomeScreen),
             selected_mon: None,
+            image_cache: cache,
         }
     }
 
@@ -75,7 +87,8 @@ impl App {
         };
 
         let mut file = File::create(&path).map_err(|e| e.to_string())?;
-        file.write_all(&writer.into_inner()).map_err(|e| e.to_string())?;
+        file.write_all(&writer.into_inner())
+            .map_err(|e| e.to_string())?;
 
         Ok(())
     }
@@ -86,24 +99,20 @@ impl App {
         let res = GVAS_FILE.set(guard);
 
         match res {
-            Ok(_) => { Ok(()) }
+            Ok(_) => Ok(()),
             Err(e) => {
                 let msg = "Failed to load save (is it already loaded?)";
-                Logger::error(msg.clone());
+                Logger::error(msg);
 
-                Err(msg.to_string())
+                Err(format!("{}: {:?}", msg, e))
             }
         }
     }
 
     pub(crate) fn is_save_loaded(&self) -> bool {
         match &self.gvas_file {
-            None => {
-                false
-            }
-            Some(_) => {
-                true
-            }
+            None => false,
+            Some(_) => true,
         }
     }
     pub fn load_screen(&mut self, next: Screen) -> Result<Screen, String> {
@@ -119,6 +128,10 @@ impl App {
             Screen::Home(mut s) => {
                 s.load(self);
                 Screen::Home(s)
+            },
+            Screen::Settings(mut s) => {
+                s.load(self);
+                Screen::Settings(s)
             }
         };
 
@@ -129,7 +142,7 @@ impl App {
     pub fn set_screen(&mut self, next: Screen) {
         Logger::info("Setting screen inside app");
         self.screen = match self.load_screen(next) {
-            Ok(s) => {s}
+            Ok(s) => s,
             Err(_) => {
                 Logger::error("Failed to set screen...");
                 return;
@@ -138,15 +151,17 @@ impl App {
     }
 }
 
+#[derive(Embed)]
+#[folder = "images"]
+pub struct Asset;
+
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         ctx.data_mut(|map| {
-            map.insert_persisted(
-                Id::new("selected_mon"),
-                None::<Option<SelectedMon>>
-            )
+            map.insert_persisted(Id::new("selected_mon"), None::<Option<SelectedMon>>)
         });
-        render_menu_bar(ctx, self);
+
+        render_menu_bar(self, ctx);
         render_navigation_bar(self, ctx);
         render_screen(self, ctx);
     }
@@ -157,13 +172,15 @@ fn render_navigation_bar(app: &mut App, ctx: &egui::Context) {
         ui.horizontal_centered(|ui| {
             for screen in [
                 Screen::Home(HomeScreen),
-                Screen::Party(PartyScreen { loaded: false, containers: vec![] }),
+                Screen::Party(PartyScreen {
+                    loaded: false,
+                    containers: vec![],
+                }),
+                Screen::Settings(SettingsScreen::new())
             ] {
                 let text: RichText = RichText::new(screen.as_str()).size(18.0);
 
-                let response = ui.add(
-                    Label::new(text).sense(Sense::click())
-                );
+                let response = ui.add(Label::new(text).sense(Sense::click()));
 
                 if response.hovered() {
                     ui.ctx().set_cursor_icon(CursorIcon::PointingHand);

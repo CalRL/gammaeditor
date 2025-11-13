@@ -1,6 +1,6 @@
 [package]
 name = "gammaeditor"
-version = "0.1.0"
+version = "0.2.0"
 description = "A PkHex esque app for Gamma Engine games"
 authors = ["CalRL"]
 edition = "2021"
@@ -16,10 +16,15 @@ eframe = "0.33.0"
 egui = { version =  "0.33.0" }
 egui_extras = { version = "0.33.0", features = ["all_loaders"]}
 rfd = { version = "0.15.4" }
+rust-embed="8.9.0"
+image = { version = "0.25.8" }
 
 [dev-dependencies]
 ordered-float = { version = "4.6.0"}
 criterion = "0.7.0"
+
+[build-dependencies]
+winresource = "0.1.27"
 
 [[bench]]
 name = "gvas_read"

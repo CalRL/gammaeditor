@@ -1,8 +1,8 @@
-use gvas::GvasFile;
+use crate::pokemon::common::get_gvas;
+use gammaeditor::save::pokemon::pp_moves_lists::{current_pp_at, max_pp_at, moves_array, moves_at};
 use gvas::properties::array_property::ArrayProperty;
 use gvas::properties::Property;
-use gammaeditor::save::pokemon::pp_moves_lists::{current_pp_at, max_pp_at, moves_array, moves_at};
-use crate::pokemon::common::get_gvas;
+use gvas::GvasFile;
 
 #[test]
 fn moves_at_returns_moves() {
@@ -113,7 +113,7 @@ fn max_pp_at_returns() {
     let moves_at = moves_at(moves, 0).expect("get moves at");
     let max_pp = max_pp_at(moves_at, 0).expect("hi").clone();
 
-    assert_eq!(max_pp ,15)
+    assert_eq!(max_pp, 15)
 }
 
 #[test]

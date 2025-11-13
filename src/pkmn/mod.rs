@@ -1,9 +1,9 @@
 use serde::Serialize;
 
-pub mod types;
-pub mod natures;
 pub mod gender;
+pub mod natures;
 pub mod stats;
+pub mod types;
 
 #[derive(Debug, Serialize, Clone)]
 pub struct EnrichedMon {
@@ -45,19 +45,19 @@ pub struct TotalMon {
     pub box_id: Option<i64>,
     pub pokeball: Option<String>,
     pub shiny: bool,
-    pub is_empty: bool
+    pub is_empty: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Types {
     pub primary: String,
-    pub secondary: String
+    pub secondary: String,
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GridPos {
     pub slot: i64,
-    pub row: i64
+    pub row: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -67,14 +67,14 @@ pub struct Stats {
     pub defense: f64,
     pub special_attack: f64,
     pub special_defense: f64,
-    pub speed: f64
+    pub speed: f64,
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Move {
     pub name: String,
     pub pp: i64,
-    pub max_pp: i64
+    pub max_pp: i64,
 }
 
 impl TotalMon {
@@ -90,10 +90,7 @@ impl TotalMon {
             types: None,
             nature: "".to_string(),
             class: "".to_string(),
-            grid_pos: GridPos {
-                slot,
-                row
-            },
+            grid_pos: GridPos { slot, row },
             pokemon_id: Some(0),
             storage_index: Some(0),
             box_id: Some(box_number),

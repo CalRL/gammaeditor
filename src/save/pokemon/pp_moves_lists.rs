@@ -1,6 +1,6 @@
 use gvas::properties::array_property::ArrayProperty;
-use gvas::properties::Property;
 use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
+use gvas::properties::Property;
 use indexmap::IndexMap;
 
 pub fn moves_array(property: &Property) -> Option<&ArrayProperty> {
@@ -21,12 +21,10 @@ pub fn moves_at(array: &ArrayProperty, index: usize) -> Option<&ArrayProperty> {
         _ => return None,
     };
 
-    properties
-        .values()
-        .find_map(|v| match v.first()? {
-            Property::ArrayProperty(arr) => Some(arr),
-            _ => None,
-        })
+    properties.values().find_map(|v| match v.first()? {
+        Property::ArrayProperty(arr) => Some(arr),
+        _ => None,
+    })
 }
 
 /// Gets max pp at an index
@@ -34,27 +32,27 @@ pub fn moves_at(array: &ArrayProperty, index: usize) -> Option<&ArrayProperty> {
 pub fn max_pp_at(moves: &ArrayProperty, index: usize) -> Option<&i32> {
     let pp_struct: &StructProperty = match &moves {
         ArrayProperty::Structs { structs, .. } => structs.get(index)?,
-        _ => return None
+        _ => return None,
     };
     let map: &IndexMap<String, Vec<Property>> = pp_struct.value.get_custom_struct()?.1;
-    let prop: &Property = map.iter()
-        .find(|(k,_)| k.starts_with("MaxPP"))
-        .and_then(|(_,v)| v.first())?;
+    let prop: &Property = map
+        .iter()
+        .find(|(k, _)| k.starts_with("MaxPP"))
+        .and_then(|(_, v)| v.first())?;
     Some(&prop.get_int()?.value)
 }
 
 pub fn current_pp_at(moves: &ArrayProperty, index: usize) -> Option<&i32> {
     let pp_struct: &StructProperty = match &moves {
         ArrayProperty::Structs { structs, .. } => structs.get(index)?,
-        _ => return None
+        _ => return None,
     };
     let map: &IndexMap<String, Vec<Property>> = pp_struct.value.get_custom_struct()?.1;
     // Typo "Curremt" is intentional, it's like that in the file...
-    let prop: &Property = map.iter()
-        .find(|(k,_)| k.starts_with("CurremtPP"))
-        .and_then(|(_,v)| v.first())?;
+    let prop: &Property = map
+        .iter()
+        .find(|(k, _)| k.starts_with("CurremtPP"))
+        .and_then(|(_, v)| v.first())?;
     Some(&prop.get_int()?.value)
 }
 pub struct PPMovesLists;
-
-

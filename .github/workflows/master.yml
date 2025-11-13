@@ -1,0 +1,73 @@
+name: Build & Release PR > Master
+
+on:
+  # Run checks on pull requests to main
+  pull_request:
+    branches:
+      - master
+
+  # Create release draft when code is merged into main
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    if: github.event_name == 'pull_request'
+    name: Cargo Check & Test (PR)
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Cargo check
+        run: cargo check --release
+
+      - name: Cargo test
+        run: cargo test --release
+
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    name: Build and Draft Release (Windows)
+    runs-on: windows-latest
+    needs: [] # can't "need" PR jobs, different event type
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release binary
+        run: cargo build --release --target x86_64-pc-windows-msvc
+
+      - name: Prepare artifact folder
+        run: |
+          mkdir dist
+          mkdir dist\GammaEditor
+          mkdir dist\GammaEditor\logs
+          copy target\x86_64-pc-windows-msvc\release\gammaeditor.exe dist\GammaEditor\gammaeditor.exe
+
+      - name: Extract latest changelog section
+        id: changelog
+        shell: bash
+        run: |
+          CONTENT=$(awk '
+            /^## \[/ { if (NR>1) exit } NR>1 { print }
+          ' CHANGELOG.md)
+
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release (draft)
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          tag_name: "v${{ github.run_number }}"
+          name: "GammaEditor v${{ github.run_number }}"
+          body: ${{ steps.changelog.outputs.changelog }}
+          files: |
+            dist/GammaEditor/gammaeditor.exe

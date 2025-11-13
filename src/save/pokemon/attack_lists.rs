@@ -1,12 +1,12 @@
 use gvas::properties::array_property::ArrayProperty;
-use gvas::properties::Property;
 use gvas::properties::struct_property::StructProperty;
+use gvas::properties::Property;
 
 // Takes the "PartyAttackLists" property
 pub fn attack_array(property: &Property) -> Option<&ArrayProperty> {
     let cs: &ArrayProperty = match &property {
         Property::ArrayProperty(arr) => Some(arr),
-        _ => return None
+        _ => return None,
     }?;
 
     Some(cs)
@@ -15,7 +15,7 @@ pub fn attack_array(property: &Property) -> Option<&ArrayProperty> {
 pub fn attacks_at(array: &ArrayProperty, index: usize) -> Option<&ArrayProperty> {
     let property: &StructProperty = match &array {
         ArrayProperty::Structs { structs, .. } => structs.get(index)?,
-        _ => return None
+        _ => return None,
     };
 
     let (_, v) = property.value.get_custom_struct()?;
@@ -24,7 +24,7 @@ pub fn attacks_at(array: &ArrayProperty, index: usize) -> Option<&ArrayProperty>
             let first = val.first()?;
             return match &first {
                 Property::ArrayProperty(arr) => Some(arr),
-                _ => None
+                _ => None,
             };
         }
     }
@@ -35,16 +35,12 @@ pub fn attacks_at(array: &ArrayProperty, index: usize) -> Option<&ArrayProperty>
 /// Takes attacks_at custom struct. Returns the attack string
 pub fn attack_at(array: &ArrayProperty, index: usize) -> Option<&String> {
     let property = match &array {
-        ArrayProperty::Properties { properties, .. } => {
-            properties.get(index)
-        }
+        ArrayProperty::Properties { properties, .. } => properties.get(index),
         _ => None,
     }?;
 
     let object = match &property {
-        Property::ObjectProperty(obj) => {
-            obj
-        }
+        Property::ObjectProperty(obj) => obj,
         _ => return None,
     };
 

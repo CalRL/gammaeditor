@@ -4,19 +4,15 @@ use gvas::properties::Property;
 
 pub fn gender_string_at(array: &ArrayProperty, index: usize) -> Option<&String> {
     let prop = match array {
-        ArrayProperty::Properties { properties, .. } => {
-            properties.get(index)
-        },
-        _ => None
+        ArrayProperty::Properties { properties, .. } => properties.get(index),
+        _ => None,
     }?;
 
     match prop {
-        Property::ByteProperty(byte) => {
-            match &byte.value {
-                BytePropertyValue::Byte(_) => { None }
-                BytePropertyValue::Namespaced(namespace) => { Some(namespace) }
-            }
-        }
-        _ => None
+        Property::ByteProperty(byte) => match &byte.value {
+            BytePropertyValue::Byte(_) => None,
+            BytePropertyValue::Namespaced(namespace) => Some(namespace),
+        },
+        _ => None,
     }
 }

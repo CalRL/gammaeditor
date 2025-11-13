@@ -3,20 +3,24 @@ use crate::logger::Logger;
 use crate::pkmn::stats::{IVSpread, IVs, StatStruct, Stats};
 use crate::save::pokemon::iv_struct::IVMut;
 use crate::save::pokemon::iv_struct::IV;
+use crate::save::pokemon::pokemon_classes::{parse_class, PokemonClasses};
 use crate::save::pokemon::pokemon_info::{InfoStruct, PokemonInfo, PokemonInfoMut};
 use crate::save::pokemon::shiny_list::{ShinyList, ShinyListMut};
+use crate::save::pokemon::{correct_name, StorageType};
+use crate::ui::image::ImageContainer;
 use crate::ui::screen::{get_images_path, render_pokemon_path, Reload, ScreenAction, ScreenTrait};
+use crate::ui::{render_image_container, render_texture};
 use crate::{try_gvas_read, try_gvas_write, unwrap_gvas};
-use egui::{Button, Image, Response, Sense, TextEdit, Ui};
-use egui_extras::{Column, TableBuilder, TableRow};
-use gvas::GvasFile;
-use std::collections::HashMap;
-use std::sync::RwLockWriteGuard;
 use eframe::emath::Vec2;
 use eframe::epaint::Color32;
-use crate::save::pokemon::StorageType;
-use crate::ui::image::ImageContainer;
-use crate::ui::render_image_container;
+use egui::Shape::Path;
+use egui::{Button, Image, Response, RichText, Sense, TextEdit, Ui};
+use egui_extras::{Column, TableBuilder, TableRow};
+use gvas::GvasFile;
+use rfd::MessageDialogResult::No;
+use std::collections::HashMap;
+use std::fmt::format;
+use std::sync::RwLockWriteGuard;
 
 #[derive(Clone, Debug)]
 pub struct SingleScreen {
@@ -34,6 +38,7 @@ pub struct Buffer {
 #[derive(Clone, Debug)]
 pub struct SingleMon {
     index: usize,
+    class: String,
     storage_type: StorageType,
     is_shiny: bool,
     name: String,
@@ -41,12 +46,11 @@ pub struct SingleMon {
     ivs: IVSpread,
 }
 
-
 #[derive(Default, Clone, Debug)]
 pub struct SingleScreenBuffer {
     pub pokemon_info: Option<InfoStruct>,
     pub is_shiny: Option<bool>,
-    pub ivs: Option<HashMap<IVs, i8>>
+    pub ivs: Option<HashMap<IVs, i8>>,
 }
 
 impl SingleScreenBuffer {
@@ -62,17 +66,18 @@ impl SingleScreenBuffer {
 impl SingleScreen {
     fn render_row(&mut self, row: &mut TableRow, stat: Stats) -> ScreenAction {
         let mon: SingleMon = match self.mon_data.clone() {
-            None => {return ScreenAction::None;}
-            Some(mon) => {mon}
+            None => {
+                return ScreenAction::None;
+            }
+            Some(mon) => mon,
         };
-
 
         fn get_stat(mon: &SingleMon, stat: Stats) -> Option<f64> {
             match try_gvas_read!(GVAS_FILE) {
                 None => {}
                 Some(gvas_file) => {
                     if let Some(party) = PokemonInfo::new_party(&*gvas_file) {
-                        return party.get_stat(mon.index, stat)
+                        return party.get_stat(mon.index, stat);
                     }
                 }
             }
@@ -107,34 +112,38 @@ impl SingleScreen {
         row.col(|ui| {
             // todo!() CACHE ALL THIS ON LOAD, GET, AND SET! THEN AFTER CHANGES, TAKE NEW VALUE!
             fn create(ui: &mut Ui, mon: &SingleMon, iv: IVs) -> ScreenAction {
-                let current_iv_guard: Option<i32> = {
-                    get_iv(mon, iv.clone())
+                let current_iv_guard: Option<i32> = { get_iv(mon, iv.clone()) };
+                let Some(current_iv) = current_iv_guard else {
+                    return ScreenAction::None;
                 };
-                let Some(current_iv) = current_iv_guard else { return ScreenAction::None; };
 
                 let mut display: String = current_iv.to_string();
                 let text_edit: TextEdit = TextEdit::singleline(&mut display);
                 let res: Response = ui.add(text_edit);
 
-
-
                 if res.changed() {
                     let mut guard: RwLockWriteGuard<GvasFile> = match try_gvas_write!(GVAS_FILE) {
-                        None => {return ScreenAction::None}
-                        Some(g) => {g}
+                        None => return ScreenAction::None,
+                        Some(g) => g,
                     };
-                    let gvas= &mut *guard;
+                    let gvas = &mut *guard;
 
                     Logger::info("Res changed");
                     if let Ok(val) = display.parse::<i32>() {
                         if let Some(mut info) = IVMut::new_party(gvas) {
                             match info.set_iv_at(mon.index, iv.clone(), val) {
                                 Ok(_) => {}
-                                Err(e) => {Logger::error(e.to_string());}
+                                Err(e) => {
+                                    Logger::error(e.to_string());
+                                }
                             };
                             let ivs = IV::new_party(&gvas).unwrap();
-                            Logger::info(format!("Updated iv: {} to: {:?}", iv.clone().as_str(), ivs.get_iv_at(mon.index, iv.clone()).unwrap()));
-                            return ScreenAction::Reload
+                            Logger::info(format!(
+                                "Updated iv: {} to: {:?}",
+                                iv.clone().as_str(),
+                                ivs.get_iv_at(mon.index, iv.clone()).unwrap()
+                            ));
+                            return ScreenAction::Reload;
                         }
                     }
                 }
@@ -145,7 +154,9 @@ impl SingleScreen {
                 let act: ScreenAction = create(ui, &mon.clone(), iv.clone());
                 match act {
                     ScreenAction::None => {}
-                    other => { action = other; }
+                    other => {
+                        action = other;
+                    }
                 }
             } else {
                 ui.add_enabled(false, TextEdit::singleline(&mut String::new()));
@@ -153,20 +164,20 @@ impl SingleScreen {
         });
         row.col(|ui| {
             fn create(ui: &mut Ui, mon: &SingleMon, stat: Stats) -> ScreenAction {
-                let current_stat_guard: Option<f64> = {
-                    get_stat(mon, stat.clone())
+                let current_stat_guard: Option<f64> = { get_stat(mon, stat.clone()) };
+                let Some(current_stat) = current_stat_guard else {
+                    return ScreenAction::None;
                 };
-                let Some(current_stat) = current_stat_guard else { return ScreenAction::None; };
 
                 let mut display: String = current_stat.to_string();
                 let text_edit: TextEdit = TextEdit::singleline(&mut display);
                 let res: Response = ui.add(text_edit);
 
                 let mut guard: RwLockWriteGuard<GvasFile> = match try_gvas_write!(GVAS_FILE) {
-                    None => {return ScreenAction::None}
-                    Some(g) => {g}
+                    None => return ScreenAction::None,
+                    Some(g) => g,
                 };
-                let gvas= &mut *guard;
+                let gvas = &mut *guard;
 
                 if res.changed() {
                     Logger::info("Res changed");
@@ -175,8 +186,12 @@ impl SingleScreen {
                             info.set_stat(mon.index, stat.clone(), val);
 
                             let info_read = PokemonInfo::new_party(&gvas).unwrap();
-                            Logger::info(format!("Updated stat: {} to: {:?}", stat.clone().as_str(), info_read.get_stat(mon.index, stat.clone()).unwrap()));
-                            return ScreenAction::Reload
+                            Logger::info(format!(
+                                "Updated stat: {} to: {:?}",
+                                stat.clone().as_str(),
+                                info_read.get_stat(mon.index, stat.clone()).unwrap()
+                            ));
+                            return ScreenAction::Reload;
                         }
                     }
                 }
@@ -186,7 +201,11 @@ impl SingleScreen {
             match act {
                 ScreenAction::None => {}
                 _ => {
-                    Logger::info(format!("Action for stat {:?}: {:?}", stat.as_str(), act.as_str()));
+                    Logger::info(format!(
+                        "Action for stat {:?}: {:?}",
+                        stat.as_str(),
+                        act.as_str()
+                    ));
                     action = act
                 }
             }
@@ -297,70 +316,90 @@ impl SingleScreen {
 
             // todo: refresh after successful save
         }
-
     }
 }
 
 impl ScreenTrait for SingleScreen {
     fn load(&mut self, app: &mut App) {
         Logger::info("Loading SingleScreen");
-        Logger::info("Getting gvas");
-        let gvas_file = &*unwrap_gvas!(GVAS_FILE);
-        Logger::info("Got gvas");
+        let gvas_file: &GvasFile = &*unwrap_gvas!(GVAS_FILE);
 
-        Logger::info("Getting idx");
         let idx = match app.selected_mon.clone() {
-            None => {return}
-            Some(sel) => {sel.index}
+            None => {
+                Logger::info("Failed to get mon.idx");
+                return;
+            }
+            Some(sel) => sel.index,
         };
 
-        Logger::info("Getting is_shiny");
         let is_shiny = match ShinyList::new_party(gvas_file) {
-            None => {return}
-            Some(l) => {
-                match l.get_shiny_at(idx) {
-                    None => {return}
-                    Some(s) => {s.clone()}
+            None => return,
+            Some(l) => match l.get_shiny_at(idx) {
+                None => {
+                    Logger::info("Failed to get is_shiny");
+                    return;
                 }
-            }
+                Some(s) => s.clone(),
+            },
         };
-        Logger::info(is_shiny.clone().to_string());
 
-        Logger::info("Getting name");
         let party = match PokemonInfo::new_party(gvas_file) {
-            None => {return}
-            Some(c) => {
-                c
+            None => {
+                Logger::info("Failed to get mon name");
+                return;
             }
+            Some(c) => c,
         };
 
         let name = match party.get_name(idx) {
-            None => { return; }
-            Some(name) => {name}
+            None => {
+                return;
+            }
+            Some(name) => name,
         };
 
-        Logger::info("Getting stats");
-
         let stats: StatStruct = match party.get_stats(idx) {
-            None => { return; }
-            Some(s) => {
-                s
+            None => {
+                Logger::info("Failed to get stats");
+                return;
             }
+            Some(s) => s,
         };
 
         // todo!() wget ALL mon data, ivs, stats, moves, pp, etc.
         let iv_wrapper: IV = match IV::new_party(gvas_file) {
-            None => { return; }
-            Some(wrapper) => {
-                wrapper
+            None => {
+                Logger::info("Failed to create IV wrapper");
+                return;
             }
+            Some(wrapper) => wrapper,
         };
+
         let ivs: IVSpread = match iv_wrapper.get_ivs_at(idx) {
-            None => { return; }
-            Some(ivs) => {
-                match IV::to_struct(ivs.iter().map(|&v| *v).collect()) {
-                    None => {return;}
-                    Some(s) => {s}
+            None => {
+                Logger::info("Failed to get IVs");
+                return;
+            }
+            Some(ivs) => match IV::to_struct(ivs.iter().map(|&v| *v).collect()) {
+                None => {
+                    Logger::info("Failed to map IVs to struct");
+                    return;
+                }
+                Some(s) => s,
+            },
+        };
+
+        let class = match PokemonClasses::new_party(gvas_file) {
+            None => {
+                Logger::info("Failed to create Classes wrapper");
+                return;
+            }
+            Some(party) => {
+                if let Some(c) = party.class_at(idx.clone()) {
+                    c.clone()
+                } else {
+                    Logger::info(format!("Failed to get class at index: {}", idx.clone()));
+                    return;
                 }
             }
         };
@@ -368,13 +407,17 @@ impl ScreenTrait for SingleScreen {
         self.mon_data = Some(SingleMon {
             index: idx,
             storage_type: StorageType::PARTY,
+            class: class.clone(),
             is_shiny,
             name: name.clone(),
             stats,
-            ivs
+            ivs,
         });
         self.loaded = true;
-        Logger::info(format!("Loaded info in SingleScreen for: {}", name));
+        Logger::info(format!(
+            "Loaded info in SingleScreen for: {:?}",
+            parse_class(class.as_str())
+        ));
     }
 
     fn ui(&mut self, ui: &mut Ui, app: &mut App) -> ScreenAction {
@@ -382,59 +425,101 @@ impl ScreenTrait for SingleScreen {
             self.load(app);
         }
         if let Some(data) = &self.mon_data {
-            let action = ui.horizontal(|ui| {
-                ui.add(render_image_container(&ImageContainer::new_party(data.name.clone(), data.is_shiny.clone(), data.index.clone())));
-                fn flip_shiny(mut guard: RwLockWriteGuard<GvasFile>, data: &SingleMon) -> ScreenAction {
+            let shiny = ui.horizontal(|ui| {
+                let parsed_class = parse_class(data.class.clone().as_str()).unwrap();
+                let shiny_text = if data.is_shiny { "shiny" } else { "normal" };
+
+                let path = format!("{}/{}.png", shiny_text, correct_name(parsed_class));
+                if let Some(tex) = app.image_cache.get(ui.ctx(), path.as_str()) {
+                    let image: Image = render_texture(tex);
+                    ui.add(image);
+                } else {
+                    Logger::info(format!("No such image: {}", path.as_str()));
+                }
+
+                fn flip_shiny(
+                    mut guard: RwLockWriteGuard<GvasFile>,
+                    data: &SingleMon,
+                ) -> ScreenAction {
                     let gvas = &mut *guard;
                     if let Some(mut list) = ShinyListMut::new_party(gvas) {
                         match list.set_shiny_at(data.index, !data.is_shiny) {
                             Ok(_) => {
-                                Logger::info(format!("Shiny toggle success!"));
+                                Logger::info("Shiny toggle success!".to_string());
                                 return ScreenAction::Reload;
                             }
-                            Err(e) => {Logger::info(format!("Failed to set shiny at: {}", e));}
+                            Err(e) => {
+                                Logger::info(format!("Failed to set shiny at: {}", e));
+                            }
                         };
                     }
                     ScreenAction::None
                 }
                 if data.is_shiny {
-                    let res: Response = ui.add(Image::new(format!("{}/shiny.png", get_images_path()))
-                        .corner_radius(5)
-                        .bg_fill(Color32::from_rgb(50, 50, 50))
-                        .fit_to_exact_size(Vec2::new(16.0, 16.0))
-                        .sense(Sense::click()));
+                    let res: Response = ui.add(
+                        Image::new(format!("{}shiny.png", get_images_path()))
+                            .corner_radius(5)
+                            .bg_fill(Color32::from_rgb(50, 50, 50))
+                            .fit_to_exact_size(Vec2::new(16.0, 16.0))
+                            .sense(Sense::click()),
+                    );
 
                     if res.clicked() {
                         let mut guard = match try_gvas_write!(GVAS_FILE) {
-                            None => {return ScreenAction::None;}
-                            Some(g) => {g}
+                            None => {
+                                return ScreenAction::None;
+                            }
+                            Some(g) => g,
                         };
                         return flip_shiny(guard, data);
                     }
                 } else {
-                    let res: Response = ui.add(Image::new(format!("{}/non_shiny.png", get_images_path()))
-                        .corner_radius(5)
-                        .bg_fill(Color32::from_rgb(0, 0, 0))
-                        .fit_to_exact_size(Vec2::new(16.0, 16.0))
-                        .sense(Sense::click()));
+                    let res: Response = ui.add(
+                        Image::new(format!("{}non_shiny.png", get_images_path()))
+                            .corner_radius(5)
+                            .bg_fill(Color32::from_rgb(0, 0, 0))
+                            .fit_to_exact_size(Vec2::new(16.0, 16.0))
+                            .sense(Sense::click()),
+                    );
 
                     if res.clicked() {
-                        Logger::info(format!("Shiny toggle clicked!"));
+                        Logger::info("Shiny toggle clicked!".to_string());
                         let guard = match try_gvas_write!(GVAS_FILE) {
-                            None => {return ScreenAction::None;}
-                            Some(g) => {g}
+                            None => {
+                                return ScreenAction::None;
+                            }
+                            Some(g) => g,
                         };
                         return flip_shiny(guard, data);
                     }
                 }
                 ScreenAction::None
             });
-            if let ScreenAction::Reload = action.inner {
+            if let ScreenAction::Reload = shiny.inner {
                 self.loaded = false;
                 return ScreenAction::Reload;
             }
+            ui.label("Nickname");
+            let mut display: String = data.name.clone();
+            let res: Response = ui.add(TextEdit::singleline(&mut display).desired_width(200.0));
+            if res.changed() {
+                let mut guard = match try_gvas_write!(GVAS_FILE) {
+                    None => {
+                        return ScreenAction::None;
+                    }
+                    Some(g) => g,
+                };
+                match PokemonInfoMut::new_party(&mut *guard) {
+                    None => {
+                        return ScreenAction::None;
+                    }
+                    Some(mut party) => {
+                        party.set_name(data.index.clone(), display);
+                        return ScreenAction::Reload;
+                    }
+                };
+            }
         }
-
 
         if let Some(action) = self.iv_table(ui) {
             return action;

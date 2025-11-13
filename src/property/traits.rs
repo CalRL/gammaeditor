@@ -3,7 +3,7 @@ use gvas::properties::struct_property::{StructProperty, StructPropertyValue};
 use gvas::properties::Property;
 
 pub struct ParentProperty<'a> {
-    property: Option<&'a Property>
+    property: Option<&'a Property>,
 }
 
 pub trait FromProperty<'a> {
@@ -29,7 +29,6 @@ pub trait StartsWith {
 
     fn get_starts_with(&self, string: &str) -> Option<&Vec<Property>>;
     fn get_starts_with_mut(&mut self, string: &str) -> Option<&mut Vec<Property>>;
-
 }
 
 impl StartsWith for StructProperty {
@@ -37,29 +36,31 @@ impl StartsWith for StructProperty {
     fn get_starts_with(&self, string: &str) -> Option<&Vec<Property>> {
         match &self.value {
             StructPropertyValue::CustomStruct { properties, .. } => {
-                for (k,v) in properties.0.iter() {
+                for (k, v) in properties.0.iter() {
                     if k.starts_with(string) {
-                        return Some(v)
+                        return Some(v);
                     }
                 }
                 None
             }
-            _ => None
+            _ => None,
         }
     }
 
     /// Returns a mutable   vector of properties in a StructProperty,
-    fn get_starts_with_mut(& mut self, string: &str) -> Option<&mut Vec<Property>> {
+    fn get_starts_with_mut(&mut self, string: &str) -> Option<&mut Vec<Property>> {
         match &mut self.value {
-            StructPropertyValue::CustomStruct { ref mut properties, .. } => {
-                for (k,v) in properties.0.iter_mut() {
+            StructPropertyValue::CustomStruct {
+                ref mut properties, ..
+            } => {
+                for (k, v) in properties.0.iter_mut() {
                     if k.starts_with(string) {
-                        return Some(v)
+                        return Some(v);
                     }
                 }
                 None
             }
-            _ => None
+            _ => None,
         }
     }
 }
@@ -83,8 +84,8 @@ impl PropertyPath for Property {
     }
 
     fn get_starts_with_mut(&mut self, prefix: &str) -> Option<&mut Property> {
-        if let Property::StructProperty(StructProperty { value, ..}) = self {
-            if let StructPropertyValue::CustomStruct { properties, ..} = value {
+        if let Property::StructProperty(StructProperty { value, .. }) = self {
+            if let StructPropertyValue::CustomStruct { properties, .. } = value {
                 for (k, v) in properties.0.iter_mut() {
                     if k.starts_with(prefix) {
                         return v.first_mut();
@@ -105,32 +106,26 @@ impl NamespacedValue for Property {
     fn get_namespaced_value(&self, string: &str) -> Option<&String> {
         let prop = self.get_starts_with(string)?;
         let byte = match prop {
-            Property::ByteProperty(byte) => {
-                Some(byte)
-            }
-            _ => None
+            Property::ByteProperty(byte) => Some(byte),
+            _ => None,
         }?;
 
         match &byte.value {
-            BytePropertyValue::Namespaced(namespaced) => {
-                Some(namespaced)
-            }
-            _ => None
+            BytePropertyValue::Namespaced(namespaced) => Some(namespaced),
+            _ => None,
         }
     }
 
     fn get_namespaced_value_mut(&mut self, string: &str) -> Option<&mut String> {
         let prop: &mut Property = self.get_starts_with_mut(string)?;
         let byte = match prop {
-            Property::ByteProperty(ref mut byte) => {
-                Some(byte)
-            }
-            _ => None
+            Property::ByteProperty(ref mut byte) => Some(byte),
+            _ => None,
         }?;
 
         match &mut byte.value {
             BytePropertyValue::Namespaced(namespaced) => Some(namespaced),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -140,17 +135,13 @@ impl NamespacedValue for StructProperty {
         let vec = self.get_starts_with(string)?;
         let prop = vec.first()?;
         let byte = match prop {
-            Property::ByteProperty(byte) => {
-                Some(byte)
-            }
-            _ => None
+            Property::ByteProperty(byte) => Some(byte),
+            _ => None,
         }?;
 
         match &byte.value {
-            BytePropertyValue::Namespaced(namespace) => {
-                Some(namespace)
-            }
-            _ => None
+            BytePropertyValue::Namespaced(namespace) => Some(namespace),
+            _ => None,
         }
     }
 

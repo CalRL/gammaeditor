@@ -1,20 +1,23 @@
 pub mod home_screen;
 pub mod party_screen;
 pub(crate) mod single_screen;
+pub mod settings_screen;
 
-use std::fmt::format;
 use crate::app::App;
 use crate::logger::Logger;
+use crate::ui::screen::home_screen::HomeScreen;
+use egui::{CentralPanel, Ui};
 use party_screen::PartyScreen;
 use single_screen::SingleScreen;
-use egui::{CentralPanel, Ui};
-use crate::ui::screen::home_screen::HomeScreen;
+use std::fmt::format;
+use crate::ui::screen::settings_screen::SettingsScreen;
 
 #[derive(Clone)]
 pub enum Screen {
     Party(PartyScreen),
     Single(SingleScreen),
     Home(HomeScreen),
+    Settings(SettingsScreen)
 }
 
 impl ScreenTrait for Screen {
@@ -23,6 +26,7 @@ impl ScreenTrait for Screen {
             Screen::Home(s) => s.load(app),
             Screen::Party(s) => s.load(app),
             Screen::Single(s) => s.load(app),
+            Screen::Settings(s) => s.load(app)
         }
     }
 
@@ -31,28 +35,28 @@ impl ScreenTrait for Screen {
             Screen::Home(s) => s.ui(ui, app),
             Screen::Party(s) => s.ui(ui, app),
             Screen::Single(s) => s.ui(ui, app),
+            Screen::Settings(s) => s.ui(ui, app)
         }
     }
 }
 
 pub enum ScreenState {
     Party(PartyScreen),
-    Empty()
+    Empty(),
 }
-
 
 pub enum ScreenAction {
     None,
     ChangeTo(Screen),
-    Reload
+    Reload,
 }
 
 impl ScreenAction {
     pub fn as_str(&self) -> &str {
         match self {
-            ScreenAction::None => {"None"}
-            ScreenAction::ChangeTo(_) => {"ChangeTo"}
-            ScreenAction::Reload => {"Reload"}
+            ScreenAction::None => "None",
+            ScreenAction::ChangeTo(_) => "ChangeTo",
+            ScreenAction::Reload => "Reload",
         }
     }
 }
@@ -60,8 +64,8 @@ impl ScreenAction {
 impl ScreenState {
     pub fn name(&self) -> &str {
         match self {
-            ScreenState::Party(_) => {"Party"}
-            _ => ""
+            ScreenState::Party(_) => "Party",
+            _ => "",
         }
     }
 }
@@ -76,14 +80,16 @@ impl Screen {
     pub fn iter() -> impl Iterator<Item = Screen> {
         [
             // we dont want Single in here
-        ].into_iter()
+        ]
+        .into_iter()
     }
 
     pub fn as_str(&self) -> &str {
         match &self {
-            Screen::Party(PartyScreen) => {"Party"}
-            Screen::Single(SingleScreen) => {"Single"}
-            Screen::Home(HomeScreen) => {"Home"}
+            Screen::Party(party_screen) => "Party",
+            Screen::Single(single_screen) => "Single",
+            Screen::Home(home_screen) => "Home",
+            Screen::Settings(s) => "Settings"
         }
     }
 }
@@ -96,7 +102,7 @@ pub trait ScreenTrait {
 pub fn render_pokemon_path<'a>(name: String, is_shiny: bool) -> String {
     let shiny_folder: &str = if is_shiny { "shiny" } else { "normal" };
     format!(
-        "file://{}/scraper/images/{}/{}.png",
+        "file://{}/images/{}/{}.png",
         env!("CARGO_MANIFEST_DIR").replace("\\", "/"),
         shiny_folder,
         name
@@ -108,17 +114,15 @@ pub fn get_images_path() -> String {
 }
 
 pub fn render_screen(app_state: &mut App, ctx: &egui::Context) {
-
     CentralPanel::default().show(ctx, |ui| {
         let mut action: ScreenAction = ScreenAction::None;
-        if app_state.is_save_loaded() {
+        if app_state.is_save_loaded() {}
 
-        }
-        
         action = match &mut app_state.clone().screen {
             Screen::Home(s) => s.ui(ui, app_state),
             Screen::Party(s) => s.ui(ui, app_state),
             Screen::Single(s) => s.ui(ui, app_state),
+            Screen::Settings(s) => {s.ui(ui, app_state)}
         };
 
         handle_screen_action(app_state, ctx, action)

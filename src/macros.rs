@@ -75,8 +75,8 @@ macro_rules! unwrap_gvas_mut {
 #[macro_export]
 macro_rules! try_gvas_read {
     ($cell:expr) => {{
-        use $crate::logger::Logger;
         use std::sync::TryLockError;
+        use $crate::logger::Logger;
 
         match $cell.get() {
             Some(cell) => match cell.try_read() {
@@ -101,8 +101,8 @@ macro_rules! try_gvas_read {
 #[macro_export]
 macro_rules! try_gvas_write {
     ($cell:expr) => {{
-        use $crate::logger::Logger;
         use std::sync::TryLockError;
+        use $crate::logger::Logger;
 
         match $cell.get() {
             Some(cell) => match cell.try_write() {

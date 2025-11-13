@@ -67,7 +67,8 @@ impl FromStr for Types {
     }
 }
 fn get_enum_number(enum_str: &str) -> Option<i32> {
-    enum_str.to_string()
+    enum_str
+        .to_string()
         .split("::")
         .last()
         .and_then(|part| part.strip_prefix("NewEnumerator"))
@@ -75,7 +76,6 @@ fn get_enum_number(enum_str: &str) -> Option<i32> {
 }
 
 pub fn from_enum(enum_str: &str) -> Option<&str> {
-
     let num: i32 = get_enum_number(enum_str)?;
     let t = match num {
         0 => "BUG",
@@ -95,15 +95,11 @@ pub fn from_enum(enum_str: &str) -> Option<&str> {
         18 => "FAIRY",
         _ => return None,
     };
-    
+
     Some(t)
 }
 
 pub enum TypeOrder {
     PRIMARY,
-    SECONDARY
+    SECONDARY,
 }
-
-
-
-

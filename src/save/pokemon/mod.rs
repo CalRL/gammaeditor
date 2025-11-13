@@ -1,18 +1,18 @@
 use std::cmp::PartialEq;
 
 pub mod attack_lists;
+pub mod gender;
+pub mod iv_struct;
+pub mod pokemon_classes;
 pub mod pokemon_id;
 pub mod pokemon_info;
-pub mod pokemon_classes;
-pub mod shiny_list;
 pub mod pp_moves_lists;
-pub mod iv_struct;
-pub mod gender;
+pub mod shiny_list;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum StorageType {
     PARTY,
-    BOXES
+    BOXES,
 }
 
 #[derive(Clone)]
@@ -25,17 +25,16 @@ impl Default for SelectedMon {
     fn default() -> Self {
         Self {
             storage_type: StorageType::PARTY,
-            index: 0
+            index: 0,
         }
     }
 }
-
 
 impl SelectedMon {
     pub fn new(storage_type: StorageType, index: usize) -> SelectedMon {
         SelectedMon {
             storage_type,
-            index
+            index,
         }
     }
 
@@ -54,4 +53,13 @@ impl SelectedMon {
 
         true
     }
+}
+
+/// Corrects an invalid mon's name
+pub fn correct_name(name: String) -> String {
+    match name.as_str() {
+        "Metacross" => "Metagross",
+        other => other,
+    }
+    .to_string()
 }
