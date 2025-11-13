@@ -27,6 +27,12 @@ jobs:
           mkdir dist\GammaEditor\logs
           copy target\x86_64-pc-windows-msvc\release\gammaeditor.exe dist\GammaEditor\gammaeditor.exe
 
+      - name: Create ZIP archive
+        run: |
+          $zipName = "GammaEditor-${{ github.ref_name }}.zip"
+          Compress-Archive -Path "dist\GammaEditor" -DestinationPath "dist\$zipName"
+          Write-Host "Created archive: dist\$zipName"
+
       - name: Extract changelog for this version
         id: changelog
         shell: bash
@@ -51,4 +57,4 @@ jobs:
           name: "GammaEditor ${{ github.ref_name }}"
           body: ${{ steps.changelog.outputs.changelog }}
           files: |
-            dist/GammaEditor/gammaeditor.exe
+            dist/GammaEditor-${{ github.ref_name }}.zip
