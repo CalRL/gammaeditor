@@ -1,27 +1,30 @@
-pub fn get_gender_from_enum(enum_str: &str) -> Option<&str> {
-    let gender = match enum_str {
-        "ENUM_Gender::NewEnumerator0" => "MALE",
-        "ENUM_Gender::NewEnumerator1" => "FEMALE",
-        "ENUM_Gender::NewEnumerator2" => "GENDERLESS",
-        _ => return None,
-    };
-
-    Some(gender)
+pub fn get_gender_from_enum(enum_str: &str) -> &str {
+    match enum_str {
+        "ENUM_Gender::NewEnumerator0" => "Male",
+        "ENUM_Gender::NewEnumerator1" => "Female",
+        _ => "Unknown",
+    }
 }
 
+#[derive(Clone, Debug, PartialEq)]
 pub enum Gender {
     Male,
     Female,
     Unknown,
 }
-
-pub enum GenderStrings {}
-
 impl Gender {
     pub fn from_str(string: &str) -> Gender {
         match string.to_uppercase().as_str() {
             "MALE" => Gender::Male,
             "FEMALE" => Gender::Female,
+            _ => Gender::Unknown,
+        }
+    }
+
+    pub fn from_enum(string: &str) -> Gender {
+        match string {
+            "ENUM_Gender::NewEnumerator0" => Gender::Male,
+            "ENUM_Gender::NewEnumerator1" => Gender::Female,
             _ => Gender::Unknown,
         }
     }
@@ -35,5 +38,15 @@ impl Gender {
         };
 
         string.to_string()
+    }
+    pub fn to_string(&self) -> String {
+        self.as_str().to_string()
+    }
+    pub fn as_str(&self) -> &str {
+        match self {
+            Gender::Male => "Male",
+            Gender::Female => "Female",
+            Gender::Unknown => "Unknown"
+        }
     }
 }

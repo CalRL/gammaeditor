@@ -8,6 +8,7 @@ pub mod pokemon_id;
 pub mod pokemon_info;
 pub mod pp_moves_lists;
 pub mod shiny_list;
+pub mod pokemon_gender;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum StorageType {
