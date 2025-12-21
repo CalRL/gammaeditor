@@ -3,6 +3,7 @@ use egui::{Context, Id};
 
 pub mod custom_struct;
 pub mod generator;
+pub mod config;
 
 pub fn get_data_persisted<T>(context: &Context, key: String) -> Option<T>
 where

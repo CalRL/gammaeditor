@@ -1,28 +1,28 @@
 use std::fs;
 use std::fs::File;
 use std::num::ParseFloatError;
-use egui::{Button, CollapsingHeader, ScrollArea, TextEdit, Ui};
+use std::sync::{Arc, Mutex};
+use egui::{Button, CollapsingHeader, CollapsingResponse, ScrollArea, TextEdit, Ui};
 use crate::app::App;
 use crate::logger::{get_log_path, Logger};
+use crate::save::AppState;
 use crate::ui::screen::{ScreenAction, ScreenTrait};
+use crate::utils::config::Config;
 
 #[derive(Clone)]
 pub struct SettingsScreen {
     log_path: String,
     log_contents: Option<String>,
-    line_count: f32,
-    input_line_count: String,
 }
 
 impl SettingsScreen {
 
-    pub fn new() -> Self {
-        Self {
+    pub fn new(config: &mut Config) -> Self {
+        let x = Self {
             log_path: get_log_path(),
             log_contents: None,
-            line_count: 12.0,
-            input_line_count: "12".to_string()
-        }
+        };
+        x
     }
 
     pub fn load_contents(&mut self) -> Result<(), String> {
@@ -37,6 +37,58 @@ impl SettingsScreen {
                 Err(msg)
             }
         }
+    }
+
+    fn render_logs(&mut self, app: &mut App, ui: &mut Ui) -> CollapsingResponse<ScreenAction> {
+        CollapsingHeader::new("Logs")
+            .show(ui, |ui| {
+                if ui.button("Refresh logs").clicked() {
+                    let _ = self.load_contents();
+                    return ScreenAction::Reload
+                }
+
+                let mut display = app.config.line_count.to_string();
+                ui.horizontal(|ui| {
+                    ui.label("Line count:");
+                    if ui.button("+").clicked() {
+                        if app.config.line_count <= 19.0 {
+                            app.config.line_count += 1.0;
+                        }
+
+                    }
+                    if ui.button("-").clicked() {
+                        if app.config.line_count >= 5.0 {
+                            app.config.line_count -= 1.0;
+                        }
+                    }
+
+                    if ui.text_edit_singleline(&mut display).changed() {
+                        if let Ok(parsed) = display.parse::<f32>() {
+                            app.config.set_line_count(parsed);
+                        }
+                    }
+                });
+
+                if let Some(ref mut logs) = self.log_contents {
+                    let line_count = app.config.line_count;
+                    let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
+                    let max_height = row_height * line_count;
+
+                    ScrollArea::vertical()
+                        .auto_shrink([true, true])
+                        .max_height(max_height)
+                        .show(ui, |ui| {
+                            ui.add(
+                                TextEdit::multiline(logs)
+                                    .code_editor()
+                                    .interactive(false)
+                                    .desired_width(f32::INFINITY)
+                                    .frame(true)
+                            );
+                        });
+                }
+                ScreenAction::None
+            })
     }
 }
 
@@ -58,40 +110,7 @@ impl ScreenTrait for SettingsScreen {
         ui.add_space(5.0);
 
 
-        let header = CollapsingHeader::new("Logs")
-            .show(ui, |ui| {
-                if ui.button("Refresh logs").clicked() {
-                    let res = self.load_contents();
-                    return ScreenAction::Reload
-                }
-
-                if ui.text_edit_singleline(&mut self.input_line_count).changed() {
-                    if let Ok(parsed) = self.input_line_count.parse::<f32>() {
-                        Logger::info(format!("Updating log height to: {}", parsed));
-                        self.line_count = parsed;
-                    }
-                }
-                if let Some(ref mut logs) = self.log_contents {
-                    let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
-                    let max_height = row_height * self.line_count;
-
-                    ScrollArea::vertical()
-                        .auto_shrink([true, true])
-                        .max_height(max_height)
-                        .show(ui, |ui| {
-                            ui.add(
-                                TextEdit::multiline(logs)
-                                    .code_editor()
-                                    .interactive(false)
-                                    .desired_width(f32::INFINITY)
-                                    .frame(true)
-                            );
-                        });
-                }
-                ScreenAction::None
-            });
-
-        action = match header.body_returned {
+        action = match self.render_logs(app, ui).body_returned {
             None => {ScreenAction::None}
             Some(res) => {res}
         };

@@ -14,10 +14,10 @@ use rfd::MessageLevel;
 use rust_embed::Embed;
 use std::fs::File;
 use std::io::{Cursor, Write};
-use std::sync::{Arc, OnceLock, RwLock, RwLockReadGuard};
+use std::sync::{Arc, Mutex, OnceLock, RwLock, RwLockReadGuard};
 use eframe::CreationContext;
-use egui::accesskit::Role::Time;
 use crate::ui::screen::settings_screen::SettingsScreen;
+use crate::utils::config::Config;
 
 pub static GVAS_FILE: OnceLock<Arc<RwLock<GvasFile>>> = OnceLock::<Arc<RwLock<GvasFile>>>::new();
 
@@ -27,6 +27,7 @@ pub struct App {
     pub screen: Screen,
     pub selected_mon: Option<SelectedMon>,
     pub image_cache: ImageCache,
+    pub config: Config,
 }
 
 pub struct Screens {
@@ -52,14 +53,17 @@ impl App {
                 panic!()
             }
         };
+
+
         Logger::info("Loading image cache");
         let start = chrono::Local::now().timestamp_millis();
-        let mut cache = Self::load_image_cache(cc);
+        let cache = Self::load_image_cache(cc);
         let end = chrono::Local::now().timestamp_millis();
         Logger::info(format!("Image cache loaded in: {} ms", end - start));
 
         Self {
-            gvas_file: None,
+            gvas_file: None,    
+            config: Config::new(),
             screen: Screen::Home(HomeScreen),
             selected_mon: None,
             image_cache: cache,
@@ -191,7 +195,7 @@ fn render_navigation_bar(app: &mut App, ctx: &egui::Context) {
                     loaded: false,
                     containers: vec![],
                 }),
-                Screen::Settings(SettingsScreen::new())
+                Screen::Settings(SettingsScreen::new(&mut app.config))
             ] {
                 let text: RichText = RichText::new(screen.as_str()).size(18.0);
 
