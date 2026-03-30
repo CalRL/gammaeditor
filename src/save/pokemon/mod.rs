@@ -65,3 +65,20 @@ pub fn correct_name(name: String) -> String {
     }
     .to_string()
 }
+
+#[derive(Debug)]
+pub enum Error {
+    NoIvs,
+    NoStats,
+    NoGender,
+    NoClass,
+    NoShiny,
+    NoId,
+    NoBall,
+    NoPP,
+    NoPrimaryType,
+    NoSecondaryType,
+    NoName,
+    NoNature,
+    NoAttackList,
+}
