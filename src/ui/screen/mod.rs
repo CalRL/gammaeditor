@@ -40,11 +40,6 @@ impl ScreenTrait for Screen {
     }
 }
 
-pub enum ScreenState {
-    Party(PartyScreen),
-    Empty(),
-}
-
 pub enum ScreenAction {
     None,
     ChangeTo(Screen),
@@ -57,15 +52,6 @@ impl ScreenAction {
             ScreenAction::None => "None",
             ScreenAction::ChangeTo(_) => "ChangeTo",
             ScreenAction::Reload => "Reload",
-        }
-    }
-}
-
-impl ScreenState {
-    pub fn name(&self) -> &str {
-        match self {
-            ScreenState::Party(_) => "Party",
-            _ => "",
         }
     }
 }
