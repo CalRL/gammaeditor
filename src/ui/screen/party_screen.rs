@@ -19,6 +19,15 @@ pub struct PartyScreen {
     pub containers: Vec<Option<ImageContainer>>,
 }
 
+impl Default for PartyScreen {
+    fn default() -> Self {
+        Self {
+            loaded: false,
+            containers: vec![]
+        }
+    }
+}
+
 impl ScreenTrait for PartyScreen {
     fn load(&mut self, app: &mut App) {
         if self.loaded {
