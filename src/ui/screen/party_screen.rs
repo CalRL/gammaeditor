@@ -4,9 +4,9 @@ use crate::save::pokemon::pokemon_classes::{class_at, parse_class, PokemonClasse
 use crate::save::pokemon::shiny_list::get_shiny_list;
 use crate::save::pokemon::{SelectedMon, StorageType};
 use crate::ui::image::ImageContainer;
+use crate::ui::render_texture;
 use crate::ui::screen::single_screen::{SingleMon, SingleScreen, SingleScreenBuffer};
 use crate::ui::screen::{Screen, ScreenAction, ScreenTrait};
-use crate::ui::render_texture;
 use crate::unwrap_gvas;
 use crate::utils::set_data_persisted;
 use egui::{CursorIcon, Direction, Image, Layout, RichText, Sense, TextBuffer, Ui};
@@ -131,7 +131,7 @@ fn create_image(app: &mut App, ui: &mut Ui, container: &ImageContainer) -> Scree
     }
 
     if !res.clicked() {
-        return ScreenAction::None
+        return ScreenAction::None;
     }
 
     Logger::info_once(format!("{} Clicked!", container.parsed_class));
@@ -153,9 +153,7 @@ fn create_image(app: &mut App, ui: &mut Ui, container: &ImageContainer) -> Scree
         needs_refresh: true,
     };
 
-    ScreenAction::ChangeTo(
-        Screen::Single(single_screen)
-    )
+    ScreenAction::ChangeTo(Screen::Single(single_screen))
 }
 
 pub fn get_names(gvas_file: &GvasFile) -> Option<Vec<String>> {

@@ -1,23 +1,22 @@
+use crate::pkmn::gender::{get_gender_from_enum, Gender};
 use egui::TextBuffer;
-use gvas::GvasFile;
 use gvas::properties::array_property::ArrayProperty;
 use gvas::properties::int_property::BytePropertyValue;
 use gvas::properties::Property;
-use crate::pkmn::gender::{get_gender_from_enum, Gender};
+use gvas::GvasFile;
 
 pub struct PokemonGender<'a> {
-    property: &'a Property
+    property: &'a Property,
 }
 
 pub struct PokemonGenderMut<'a> {
-    property: &'a mut Property
+    property: &'a mut Property,
 }
 
 impl<'a> PokemonGender<'a> {
-
     pub fn new_party(gvas_file: &'a GvasFile) -> Option<Self> {
         Some(Self {
-            property: gvas_file.properties.get("PartyGender")?
+            property: gvas_file.properties.get("PartyGender")?,
         })
     }
     pub fn get_gender_at(&self, index: usize) -> Option<Gender> {
@@ -32,17 +31,15 @@ impl<'a> PokemonGender<'a> {
 
 impl<'a> PokemonGenderMut<'a> {
     pub fn new_party(gvas_file: &'a mut GvasFile) -> Option<Self> {
-        Some(
-            Self {
-                property: gvas_file.properties.get_mut("PartyGender")?
-            }
-        )
+        Some(Self {
+            property: gvas_file.properties.get_mut("PartyGender")?,
+        })
     }
 
     pub fn set_gender_at(&mut self, gender: Gender, index: usize) -> Result<(), String> {
         let array: &mut ArrayProperty = match self.property.get_array_mut() {
-            None => { return Err("Failed to get array".to_string()) }
-            Some(a) => a
+            None => return Err("Failed to get array".to_string()),
+            Some(a) => a,
         };
         if let Some(old) = get_gender_at_mut(array, index) {
             *old = to_byte_property_value(gender);
@@ -55,45 +52,35 @@ impl<'a> PokemonGenderMut<'a> {
 fn to_byte_property_value(gender: Gender) -> BytePropertyValue {
     BytePropertyValue::Namespaced(gender.as_enum())
 }
-fn get_property_string(value: BytePropertyValue) -> Option<String>{
+fn get_property_string(value: BytePropertyValue) -> Option<String> {
     let string: Option<String> = match value {
-        BytePropertyValue::Namespaced(namespace) => {
-            Some(namespace.clone())
-        }
-        _ => None
+        BytePropertyValue::Namespaced(namespace) => Some(namespace.clone()),
+        _ => None,
     };
     string
 }
 
-fn get_gender_at(array: &ArrayProperty, index: usize) -> Option<&BytePropertyValue>{
+fn get_gender_at(array: &ArrayProperty, index: usize) -> Option<&BytePropertyValue> {
     let props: &Vec<Property> = match array {
-        ArrayProperty::Properties { properties, .. } => {
-            properties
-        }
-        _ => return None
+        ArrayProperty::Properties { properties, .. } => properties,
+        _ => return None,
     };
 
     let bytes: &Property = match props.get(index) {
-        None => {return None}
-        Some(byte) => {
-            byte
-        }
+        None => return None,
+        Some(byte) => byte,
     };
 
     match bytes {
-        Property::ByteProperty(prop) => {
-            Some(&prop.value)
-        }
-        _ => None
+        Property::ByteProperty(prop) => Some(&prop.value),
+        _ => None,
     }
 }
 
-fn get_gender_at_mut(array: &mut ArrayProperty, index: usize) -> Option<&mut BytePropertyValue>{
+fn get_gender_at_mut(array: &mut ArrayProperty, index: usize) -> Option<&mut BytePropertyValue> {
     let props: &mut Vec<Property> = match array {
-        ArrayProperty::Properties { properties, .. } => {
-            properties
-        }
-        _ => return None
+        ArrayProperty::Properties { properties, .. } => properties,
+        _ => return None,
     };
 
     let property: &mut Property = props.get_mut(index)?;

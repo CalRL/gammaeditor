@@ -1,9 +1,7 @@
 use crate::logger::Logger;
 use crate::pkmn::stats::{StatStruct, Stats};
 use crate::property::traits::{NamespacedValue, PropertyPath, StartsWith};
-use crate::utils::custom_struct::{
-    get_struct_at_idx_mut, get_struct_property_at_idx,
-};
+use crate::utils::custom_struct::{get_struct_at_idx_mut, get_struct_property_at_idx};
 use gvas::properties::int_property::BytePropertyValue;
 use gvas::properties::struct_property::StructProperty;
 use gvas::properties::text_property::FTextHistory;

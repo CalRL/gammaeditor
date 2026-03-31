@@ -4,13 +4,13 @@ use crate::pkmn::stats::{IVs, Stats};
 use crate::save::pokemon::iv_struct::IVMut;
 use crate::save::pokemon::iv_struct::IV;
 use crate::save::pokemon::pokemon_info::{PokemonInfo, PokemonInfoMut};
-use crate::ui::screen::{ScreenAction, ScreenTrait};
 use crate::try_gvas_write;
+use crate::ui::screen::single_screen::logic::{get_iv, get_stat};
+use crate::ui::screen::single_screen::SingleMon;
+use crate::ui::screen::{ScreenAction, ScreenTrait};
 use egui::{Response, TextEdit, Ui};
 use gvas::GvasFile;
 use std::sync::RwLockWriteGuard;
-use crate::ui::screen::single_screen::{SingleMon};
-use crate::ui::screen::single_screen::logic::{get_iv, get_stat};
 
 pub(super) fn create_iv_ui(ui: &mut Ui, mon: &SingleMon, iv: IVs) -> ScreenAction {
     let current_iv_guard: Option<i32> = { get_iv(mon, iv.clone()) };
@@ -23,7 +23,7 @@ pub(super) fn create_iv_ui(ui: &mut Ui, mon: &SingleMon, iv: IVs) -> ScreenActio
     let res: Response = ui.add(text_edit);
 
     if !res.changed() {
-        return ScreenAction::None
+        return ScreenAction::None;
     }
 
     let mut guard: RwLockWriteGuard<GvasFile> = match try_gvas_write!(GVAS_FILE) {
@@ -38,7 +38,7 @@ pub(super) fn create_iv_ui(ui: &mut Ui, mon: &SingleMon, iv: IVs) -> ScreenActio
         return ScreenAction::None;
     };
 
-    let Some(mut info) = IVMut::new_party(gvas) else{
+    let Some(mut info) = IVMut::new_party(gvas) else {
         return ScreenAction::None;
     };
 

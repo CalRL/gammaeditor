@@ -1,5 +1,5 @@
-mod ui;
 mod logic;
+mod ui;
 
 use crate::app::{App, GVAS_FILE};
 use crate::logger::Logger;
@@ -15,7 +15,9 @@ use crate::save::pokemon::pokemon_info::{InfoStruct, PokemonInfo};
 use crate::save::pokemon::shiny_list::ShinyList;
 use crate::save::pokemon::{correct_name, SelectedMon, StorageType};
 use crate::ui::render_texture;
-use crate::ui::screen::single_screen::logic::{flip_shiny, iv_table, load_pokemon, nickname_ui, render_ball_combo, render_gender_combo};
+use crate::ui::screen::single_screen::logic::{
+    flip_shiny, iv_table, load_pokemon, nickname_ui, render_ball_combo, render_gender_combo,
+};
 use crate::ui::screen::single_screen::ui::{create_info_ui, create_iv_ui};
 use crate::ui::screen::{get_images_path, Reload, ScreenAction, ScreenTrait};
 use crate::{do_action, try_gvas_read, try_gvas_write};
@@ -50,7 +52,7 @@ pub struct SingleMon {
     name: String,
     stats: StatStruct,
     ivs: IVSpread,
-    ball: PokeBall
+    ball: PokeBall,
 }
 
 #[derive(Default, Clone, Debug)]
@@ -118,9 +120,10 @@ impl SingleScreen {
 
 impl ScreenTrait for SingleScreen {
     fn load(&mut self, app: &mut App) {
-
         let error: Error = match load_screen(self, app) {
-            Ok(_) => { return; }
+            Ok(_) => {
+                return;
+            }
             Err(e) => {
                 Logger::info(format!("{:?}", e));
                 e
@@ -144,7 +147,7 @@ impl ScreenTrait for SingleScreen {
         if !self.loaded {
             self.load(app);
         }
-        
+
         let Some(data) = &self.mon_data else {
             return ScreenAction::None;
         };
@@ -202,7 +205,6 @@ impl ScreenTrait for SingleScreen {
             do_action!(render_ball_combo(app, data, ui), self);
 
             ScreenAction::None
-
         });
         if let ScreenAction::Reload = shiny.inner {
             self.loaded = false;
@@ -235,13 +237,13 @@ impl Reload for SingleScreen {
 pub enum Error {
     Gvas(String),
     Pokemon(pokemon::Error),
-    NoSelection
+    NoSelection,
 }
 
 fn load_screen(screen: &mut SingleScreen, app: &mut App) -> Result<(), Error> {
     Logger::info("Loading SingleScreen");
-    let gvas_file: RwLockReadGuard<GvasFile> = try_gvas_read!(GVAS_FILE).ok_or(Error::Gvas("Failed to read GVAS file.".into()))?;
-
+    let gvas_file: RwLockReadGuard<GvasFile> =
+        try_gvas_read!(GVAS_FILE).ok_or(Error::Gvas("Failed to read GVAS file.".into()))?;
 
     let selected: SelectedMon = app.selected_mon.clone().ok_or(Error::NoSelection)?;
     let idx: usize = selected.index;
@@ -258,4 +260,3 @@ fn load_screen(screen: &mut SingleScreen, app: &mut App) -> Result<(), Error> {
 
     Ok(())
 }
-

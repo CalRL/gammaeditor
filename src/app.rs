@@ -4,9 +4,12 @@ use crate::ui::image::ImageCache;
 use crate::ui::menu::render_menu_bar;
 use crate::ui::screen::home_screen::HomeScreen;
 use crate::ui::screen::party_screen::PartyScreen;
+use crate::ui::screen::settings_screen::SettingsScreen;
 use crate::ui::screen::single_screen::SingleScreen;
 use crate::ui::screen::ScreenTrait;
 use crate::ui::screen::{render_screen, Screen};
+use crate::utils::config::Config;
+use eframe::CreationContext;
 use egui::panel::TopBottomSide;
 use egui::{Context, CursorIcon, Id, Label, RichText, Sense};
 use gvas::GvasFile;
@@ -15,9 +18,6 @@ use rust_embed::Embed;
 use std::fs::File;
 use std::io::{Cursor, Write};
 use std::sync::{Arc, Mutex, OnceLock, RwLock, RwLockReadGuard};
-use eframe::CreationContext;
-use crate::ui::screen::settings_screen::SettingsScreen;
-use crate::utils::config::Config;
 
 pub static GVAS_FILE: OnceLock<Arc<RwLock<GvasFile>>> = OnceLock::<Arc<RwLock<GvasFile>>>::new();
 
@@ -54,7 +54,6 @@ impl App {
             }
         };
 
-
         Logger::info("Loading image cache");
         let start = chrono::Local::now().timestamp_millis();
         let cache = Self::load_image_cache(cc);
@@ -62,7 +61,7 @@ impl App {
         Logger::info(format!("Image cache loaded in: {} ms", end - start));
 
         Self {
-            gvas_file: None,    
+            gvas_file: None,
             config: Config::new(),
             screen: Screen::Home(HomeScreen),
             selected_mon: None,
@@ -147,7 +146,7 @@ impl App {
             Screen::Home(mut s) => {
                 s.load(self);
                 Screen::Home(s)
-            },
+            }
             Screen::Settings(mut s) => {
                 s.load(self);
                 Screen::Settings(s)
@@ -195,7 +194,7 @@ fn render_navigation_bar(app: &mut App, ctx: &egui::Context) {
                     loaded: false,
                     containers: vec![],
                 }),
-                Screen::Settings(SettingsScreen::new(&mut app.config))
+                Screen::Settings(SettingsScreen::new(&mut app.config)),
             ] {
                 let text: RichText = RichText::new(screen.as_str()).size(18.0);
 

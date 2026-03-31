@@ -11,7 +11,7 @@ impl PokeBall {
             "/Game/SPRITES/UI/ITEMS/SPR_Item_POKEBALL.SPR_Item_POKEBALL" => Self::PokeBall,
             "/Game/SPRITES/UI/ITEMS/SPR_Item_GREATBALL.SPR_Item_GREATBALL" => Self::GreatBall,
             "/Game/SPRITES/UI/ITEMS/SPR_Item_ULTRABALL.SPR_Item_ULTRABALL" => Self::UltraBall,
-            _ => return None
+            _ => return None,
         };
         Some(res)
     }

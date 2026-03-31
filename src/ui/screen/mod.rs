@@ -1,23 +1,23 @@
+mod box_screen;
 pub mod home_screen;
 pub mod party_screen;
-pub mod single_screen;
 pub mod settings_screen;
-mod box_screen;
+pub mod single_screen;
 
 use crate::app::App;
 use crate::logger::Logger;
 use crate::ui::screen::home_screen::HomeScreen;
+use crate::ui::screen::settings_screen::SettingsScreen;
 use egui::{CentralPanel, Ui};
 use party_screen::PartyScreen;
 use single_screen::SingleScreen;
-use crate::ui::screen::settings_screen::SettingsScreen;
 
 #[derive(Clone)]
 pub enum Screen {
     Party(PartyScreen),
     Single(SingleScreen),
     Home(HomeScreen),
-    Settings(SettingsScreen)
+    Settings(SettingsScreen),
 }
 
 impl ScreenTrait for Screen {
@@ -26,7 +26,7 @@ impl ScreenTrait for Screen {
             Screen::Home(s) => s.load(app),
             Screen::Party(s) => s.load(app),
             Screen::Single(s) => s.load(app),
-            Screen::Settings(s) => s.load(app)
+            Screen::Settings(s) => s.load(app),
         }
     }
 
@@ -35,7 +35,7 @@ impl ScreenTrait for Screen {
             Screen::Home(s) => s.ui(ui, app),
             Screen::Party(s) => s.ui(ui, app),
             Screen::Single(s) => s.ui(ui, app),
-            Screen::Settings(s) => s.ui(ui, app)
+            Screen::Settings(s) => s.ui(ui, app),
         }
     }
 }
@@ -89,7 +89,7 @@ impl Screen {
             Screen::Party(party_screen) => "Party",
             Screen::Single(single_screen) => "Single",
             Screen::Home(home_screen) => "Home",
-            Screen::Settings(s) => "Settings"
+            Screen::Settings(s) => "Settings",
         }
     }
 }
@@ -122,7 +122,7 @@ pub fn render_screen(app_state: &mut App, ctx: &egui::Context) {
             Screen::Home(s) => s.ui(ui, app_state),
             Screen::Party(s) => s.ui(ui, app_state),
             Screen::Single(s) => s.ui(ui, app_state),
-            Screen::Settings(s) => {s.ui(ui, app_state)}
+            Screen::Settings(s) => s.ui(ui, app_state),
         };
 
         handle_screen_action(app_state, ctx, action)

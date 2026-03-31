@@ -1,25 +1,25 @@
 use crate::app::{App, GVAS_FILE};
 use crate::logger::Logger;
+use crate::pkmn::ball::PokeBall;
+use crate::pkmn::gender::Gender;
 use crate::pkmn::stats::{IVSpread, IVs, StatStruct, Stats};
+use crate::save::pokemon;
+use crate::save::pokemon::caught_ball::{CaughtBall, CaughtBallMut};
 use crate::save::pokemon::iv_struct::IV;
+use crate::save::pokemon::pokemon_classes::PokemonClasses;
+use crate::save::pokemon::pokemon_gender::{PokemonGender, PokemonGenderMut};
 use crate::save::pokemon::pokemon_info::{PokemonInfo, PokemonInfoMut};
+use crate::save::pokemon::shiny_list::{ShinyList, ShinyListMut};
+use crate::save::pokemon::StorageType;
+use crate::ui::screen::single_screen::{SingleMon, SingleScreen};
 use crate::ui::screen::{ScreenAction, ScreenTrait};
 use crate::{do_action, try_gvas_read, try_gvas_write};
-use std::collections::HashMap;
-use std::sync::{RwLockReadGuard, RwLockWriteGuard};
 use eframe::emath::Vec2;
 use egui::{Button, ComboBox, Image, Response, Sense, TextEdit, Ui};
 use egui_extras::{Column, TableBuilder};
 use gvas::GvasFile;
-use crate::pkmn::ball::PokeBall;
-use crate::pkmn::gender::Gender;
-use crate::save::pokemon;
-use crate::save::pokemon::caught_ball::{CaughtBall, CaughtBallMut};
-use crate::save::pokemon::pokemon_classes::PokemonClasses;
-use crate::save::pokemon::pokemon_gender::{PokemonGender, PokemonGenderMut};
-use crate::save::pokemon::shiny_list::{ShinyList, ShinyListMut};
-use crate::save::pokemon::StorageType;
-use crate::ui::screen::single_screen::{SingleMon, SingleScreen};
+use std::collections::HashMap;
+use std::sync::{RwLockReadGuard, RwLockWriteGuard};
 
 pub(super) fn get_stat(mon: &SingleMon, stat: Stats) -> Option<f64> {
     match try_gvas_read!(GVAS_FILE) {
@@ -82,10 +82,7 @@ pub(super) fn iv_table(screen: &mut SingleScreen, ui: &mut Ui) -> Option<ScreenA
     Some(action)
 }
 
-pub(super) fn flip_shiny(
-    mut guard: RwLockWriteGuard<GvasFile>,
-    data: &SingleMon,
-) -> ScreenAction {
+pub(super) fn flip_shiny(mut guard: RwLockWriteGuard<GvasFile>, data: &SingleMon) -> ScreenAction {
     let gvas = &mut *guard;
     if let Some(mut list) = ShinyListMut::new_party(gvas) {
         match list.set_shiny_at(data.index, !data.is_shiny) {
@@ -126,10 +123,8 @@ pub(super) fn render_ball_combo(app: &mut App, data: &SingleMon, ui: &mut Ui) ->
 
     if data.ball.clone() != val {
         let mut guard = match try_gvas_write!(GVAS_FILE) {
-            None => {
-                return ScreenAction::None
-            }
-            Some(guard) => { guard }
+            None => return ScreenAction::None,
+            Some(guard) => guard,
         };
         let gvas = &mut *guard;
         if let Some(mut wrapper) = CaughtBallMut::new_party(gvas) {
@@ -153,30 +148,27 @@ pub(super) fn render_gender_combo(data: &SingleMon, ui: &mut Ui) -> ScreenAction
             ui.selectable_value(&mut val, Gender::Male, "Male");
             ui.selectable_value(&mut val, Gender::Female, "Female");
             ui.selectable_value(&mut val, Gender::Unknown, "Unknown");
-        }
-        );
+        });
 
     if data.gender != val {
         let mut guard: RwLockWriteGuard<GvasFile> = match try_gvas_write!(GVAS_FILE) {
             None => {
                 Logger::error("Failed to get gvas to update gender");
-                return ScreenAction::None
+                return ScreenAction::None;
             }
-            Some(guard) => {
-                guard
-            }
+            Some(guard) => guard,
         };
 
         let gvas: &mut GvasFile = &mut *guard;
 
         if let Some(mut wrapper) = PokemonGenderMut::new_party(gvas) {
             match wrapper.set_gender_at(val.clone(), data.index) {
-                Ok(_) => {
-                    Logger::info(format!("Updated gender to {} for: {}", val.as_str(), data.class))
-                }
-                Err(e) => {
-                    Logger::error(e)
-                }
+                Ok(_) => Logger::info(format!(
+                    "Updated gender to {} for: {}",
+                    val.as_str(),
+                    data.class
+                )),
+                Err(e) => Logger::error(e),
             };
         }
 
@@ -198,54 +190,50 @@ pub(super) fn nickname_ui(data: &SingleMon, ui: &mut Ui) -> ScreenAction {
             Some(g) => g,
         };
         return match PokemonInfoMut::new_party(&mut *guard) {
-            None => {
-                ScreenAction::None
-            }
+            None => ScreenAction::None,
             Some(mut party) => {
                 party.set_name(data.index.clone(), display);
                 ScreenAction::Reload
             }
-        }
+        };
     }
 
     action
 }
 
-pub(super) fn load_pokemon(gvas_file: &RwLockReadGuard<GvasFile>, idx: usize) -> Result<SingleMon, pokemon::Error> {
+pub(super) fn load_pokemon(
+    gvas_file: &RwLockReadGuard<GvasFile>,
+    idx: usize,
+) -> Result<SingleMon, pokemon::Error> {
+    let shiny_list = ShinyList::new_party(gvas_file).ok_or(pokemon::Error::NoShiny)?;
+    let is_shiny = shiny_list
+        .get_shiny_at(idx)
+        .ok_or(pokemon::Error::NoShiny)?
+        .clone();
 
-    let shiny_list = ShinyList::new_party(gvas_file)
-        .ok_or(pokemon::Error::NoShiny)?;
-    let is_shiny = shiny_list.get_shiny_at(idx)
-        .ok_or(pokemon::Error::NoShiny)?.clone();
+    let party = PokemonInfo::new_party(gvas_file).ok_or(pokemon::Error::NoName)?;
+    let name = party.get_name(idx).ok_or(pokemon::Error::NoName)?.clone();
+    let stats: StatStruct = party.get_stats(idx).ok_or(pokemon::Error::NoStats)?;
 
-    let party = PokemonInfo::new_party(gvas_file)
-        .ok_or(pokemon::Error::NoName)?;
-    let name = party.get_name(idx)
-        .ok_or(pokemon::Error::NoName)?.clone();
-    let stats: StatStruct = party.get_stats(idx)
-        .ok_or(pokemon::Error::NoStats)?;
+    let iv_wrapper = IV::new_party(gvas_file).ok_or(pokemon::Error::NoIvs)?;
+    let raw_ivs = iv_wrapper.get_ivs_at(idx).ok_or(pokemon::Error::NoIvs)?;
+    let ivs: IVSpread =
+        IV::to_struct(raw_ivs.iter().copied().copied().collect()).ok_or(pokemon::Error::NoIvs)?;
 
+    let class_wrapper = PokemonClasses::new_party(gvas_file).ok_or(pokemon::Error::NoClass)?;
+    let class = class_wrapper
+        .class_at(idx)
+        .ok_or(pokemon::Error::NoClass)?
+        .clone();
 
-    let iv_wrapper = IV::new_party(gvas_file)
-        .ok_or(pokemon::Error::NoIvs)?;
-    let raw_ivs = iv_wrapper.get_ivs_at(idx)
-        .ok_or(pokemon::Error::NoIvs)?;
-    let ivs: IVSpread = IV::to_struct(raw_ivs.iter().copied().copied().collect())
-        .ok_or(pokemon::Error::NoIvs)?;
-
-    let class_wrapper = PokemonClasses::new_party(gvas_file)
-        .ok_or(pokemon::Error::NoClass)?;
-    let class = class_wrapper.class_at(idx).ok_or(pokemon::Error::NoClass)?.clone();
-
-
-    let gender_wrapper = PokemonGender::new_party(gvas_file)
-        .ok_or(pokemon::Error::NoGender)?;
-    let gender = gender_wrapper.get_gender_at(idx)
+    let gender_wrapper = PokemonGender::new_party(gvas_file).ok_or(pokemon::Error::NoGender)?;
+    let gender = gender_wrapper
+        .get_gender_at(idx)
         .ok_or(pokemon::Error::NoGender)?;
 
-    let ball_wrapper = CaughtBall::new_party(gvas_file)
-        .ok_or(pokemon::Error::NoBall)?;
-    let ball = ball_wrapper.get_caught_ball_at(idx)
+    let ball_wrapper = CaughtBall::new_party(gvas_file).ok_or(pokemon::Error::NoBall)?;
+    let ball = ball_wrapper
+        .get_caught_ball_at(idx)
         .ok_or(pokemon::Error::NoBall)?;
 
     Ok(SingleMon {

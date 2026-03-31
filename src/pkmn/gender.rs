@@ -46,7 +46,7 @@ impl Gender {
         match self {
             Gender::Male => "Male",
             Gender::Female => "Female",
-            Gender::Unknown => "Unknown"
+            Gender::Unknown => "Unknown",
         }
     }
 }
