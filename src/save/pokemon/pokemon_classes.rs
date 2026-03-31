@@ -52,6 +52,12 @@ impl<'a> PokemonClasses<'a> {
         Some(Self { property })
     }
 
+    pub fn new_box(gvas_file: &'a GvasFile, index: usize) -> Option<Self> {
+        let key = format!("Box{}PokemonClasses", index);
+        let property = gvas_file.properties.get(key.as_str())?;
+        Some(Self { property })
+    }
+
     pub fn class_at(&self, idx: usize) -> Option<&String> {
         let arr = self.property.get_array()?;
         let class = class_at(arr, idx);

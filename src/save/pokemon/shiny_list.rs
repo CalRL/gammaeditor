@@ -47,8 +47,16 @@ impl<'a> ShinyList<'a> {
         prop
     }
 
-    pub fn new_box(gvas_file: &GvasFile) -> Self {
-        todo!()
+    pub fn new_box(gvas_file: &'a GvasFile, box_id: usize) -> Option<Self> {
+        let key = format!("Box{}ShinyList", box_id);
+        match gvas_file.properties.get(key.as_str()) {
+            None => { None }
+            Some(p) => {
+                Some(Self {
+                    property: p
+                })
+            }
+        }
     }
 
     fn get_array(&self) -> Option<&ArrayProperty> {
