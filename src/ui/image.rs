@@ -1,8 +1,9 @@
 use crate::app::Asset;
 use crate::save::pokemon::pokemon_classes::parse_class;
 use crate::save::pokemon::{correct_name, StorageType};
-use egui::{Color32, ColorImage, Context, TextureHandle, Vec2};
+use egui::{Color32, ColorImage, Context, CursorIcon, Sense, TextureHandle, Ui, Vec2};
 use std::collections::HashMap;
+use eframe::epaint::StrokeKind;
 
 #[derive(Clone, Debug)]
 pub struct ImageContainer {
@@ -17,12 +18,26 @@ impl ImageContainer {
     pub fn new_party(class: String, is_shiny: bool, index: usize) -> Option<Self> {
         let shiny_text = if is_shiny { "shiny" } else { "normal" };
         let parsed_class = parse_class(class.as_str())?;
-        let path = format!("{}/{}.png", shiny_text, correct_name(parsed_class));
+        let path = format!("{}/{}.png", shiny_text, correct_name(parsed_class.clone()));
 
         Some(Self {
             path,
             storage_type: StorageType::PARTY,
-            parsed_class: class,
+            parsed_class,
+            is_shiny,
+            index,
+        })
+    }
+
+    pub fn new_box(class: String, is_shiny: bool, index: usize) -> Option<Self> {
+        let shiny_text = if is_shiny { "shiny" } else { "normal" };
+        let parsed_class = parse_class(class.as_str())?;
+        let path = format!("{}/{}.png", shiny_text, correct_name(parsed_class.clone()));
+
+        Some(Self {
+            path,
+            storage_type: StorageType::BOXES,
+            parsed_class,
             is_shiny,
             index,
         })

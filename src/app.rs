@@ -18,6 +18,7 @@ use rust_embed::Embed;
 use std::fs::File;
 use std::io::{Cursor, Write};
 use std::sync::{Arc, OnceLock, RwLock, RwLockReadGuard};
+use crate::ui::screen::box_screen::BoxesScreen;
 
 pub static GVAS_FILE: OnceLock<Arc<RwLock<GvasFile>>> = OnceLock::<Arc<RwLock<GvasFile>>>::new();
 
@@ -151,6 +152,10 @@ impl App {
                 s.load(self);
                 Screen::Settings(s)
             }
+            Screen::Box(mut s) => {
+                s.load(self);
+                Screen::Box(s)
+            }
         };
 
         Logger::info(format!("Loaded screen: {}", screen.clone().as_str()));
@@ -190,10 +195,8 @@ fn render_navigation_bar(app: &mut App, ctx: &egui::Context) {
         ui.horizontal_centered(|ui| {
             for screen in [
                 Screen::Home(HomeScreen),
-                Screen::Party(PartyScreen {
-                    loaded: false,
-                    containers: vec![],
-                }),
+                Screen::Party(PartyScreen::default()),
+                Screen::Box(BoxesScreen::default()),
                 Screen::Settings(SettingsScreen::new(&mut app.config)),
             ] {
                 let text: RichText = RichText::new(screen.as_str()).size(18.0);
