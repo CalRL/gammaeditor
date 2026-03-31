@@ -155,29 +155,3 @@ fn create_image(app: &mut App, ui: &mut Ui, container: &ImageContainer) -> Scree
 
     ScreenAction::ChangeTo(Screen::Single(single_screen))
 }
-
-pub fn get_names(gvas_file: &GvasFile) -> Option<Vec<String>> {
-    let prop: &Property = match gvas_file.properties.get("PartyPokemonClasses") {
-        None => return None,
-        Some(p) => p,
-    };
-    let arr = prop.get_array()?;
-    let mut class_vec: Vec<String> = Vec::new();
-    for i in 0..5 {
-        let class = match class_at(&arr, i) {
-            None => continue,
-            Some(c) => c,
-        };
-        class_vec.push(class.clone());
-    }
-
-    let mut vec: Vec<String> = Vec::new();
-    for i in class_vec.iter() {
-        let parsed: String = match parse_class(i.as_str()) {
-            None => "".to_string(),
-            Some(c) => c,
-        };
-        vec.push(parsed)
-    }
-    Some(vec)
-}
