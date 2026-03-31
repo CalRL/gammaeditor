@@ -1,4 +1,4 @@
-use crate::pkmn::gender::{get_gender_from_enum, Gender};
+use crate::pkmn::gender::Gender;
 use egui::TextBuffer;
 use gvas::properties::array_property::ArrayProperty;
 use gvas::properties::int_property::BytePropertyValue;

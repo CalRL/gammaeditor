@@ -1,7 +1,5 @@
 use crate::logger::Logger;
 use serde::Deserialize;
-use std::fs::File;
-use std::sync::Arc;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Config {

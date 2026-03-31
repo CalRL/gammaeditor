@@ -7,7 +7,7 @@ use crate::save::pokemon::pokemon_info::{PokemonInfo, PokemonInfoMut};
 use crate::try_gvas_write;
 use crate::ui::screen::single_screen::logic::{get_iv, get_stat};
 use crate::ui::screen::single_screen::SingleMon;
-use crate::ui::screen::{ScreenAction, ScreenTrait};
+use crate::ui::screen::ScreenAction;
 use egui::{Response, TextEdit, Ui};
 use gvas::GvasFile;
 use std::sync::RwLockWriteGuard;

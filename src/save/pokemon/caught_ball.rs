@@ -55,7 +55,7 @@ fn get_caught_ball_at(array: &ArrayProperty, index: usize) -> Option<String> {
 }
 
 fn get_caught_ball_at_mut(array: &mut ArrayProperty, index: usize) -> Option<&mut String> {
-    let mut property = match array {
+    let property = match array {
         ArrayProperty::Properties { properties, .. } => properties.get_mut(index)?,
         _ => return None,
     };

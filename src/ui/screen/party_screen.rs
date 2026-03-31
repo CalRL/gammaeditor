@@ -5,7 +5,7 @@ use crate::save::pokemon::shiny_list::get_shiny_list;
 use crate::save::pokemon::{SelectedMon, StorageType};
 use crate::ui::image::ImageContainer;
 use crate::ui::render_texture;
-use crate::ui::screen::single_screen::{SingleMon, SingleScreen, SingleScreenBuffer};
+use crate::ui::screen::single_screen::{SingleScreen, SingleScreenBuffer};
 use crate::ui::screen::{Screen, ScreenAction, ScreenTrait};
 use crate::unwrap_gvas;
 use crate::utils::set_data_persisted;

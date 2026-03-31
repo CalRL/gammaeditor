@@ -1,13 +1,9 @@
 use crate::app::App;
 use crate::logger::{get_log_path, Logger};
-use crate::save::AppState;
 use crate::ui::screen::{ScreenAction, ScreenTrait};
 use crate::utils::config::Config;
-use egui::{Button, CollapsingHeader, CollapsingResponse, ScrollArea, TextEdit, Ui};
+use egui::{CollapsingHeader, CollapsingResponse, ScrollArea, TextEdit, Ui};
 use std::fs;
-use std::fs::File;
-use std::num::ParseFloatError;
-use std::sync::{Arc, Mutex};
 
 #[derive(Clone)]
 pub struct SettingsScreen {

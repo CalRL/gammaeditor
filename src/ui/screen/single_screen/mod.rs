@@ -7,12 +7,8 @@ use crate::pkmn::ball::PokeBall;
 use crate::pkmn::gender::Gender;
 use crate::pkmn::stats::{IVSpread, IVs, StatStruct, Stats};
 use crate::save::pokemon;
-use crate::save::pokemon::caught_ball::CaughtBall;
-use crate::save::pokemon::iv_struct::IV;
-use crate::save::pokemon::pokemon_classes::{parse_class, PokemonClasses};
-use crate::save::pokemon::pokemon_gender::PokemonGender;
-use crate::save::pokemon::pokemon_info::{InfoStruct, PokemonInfo};
-use crate::save::pokemon::shiny_list::ShinyList;
+use crate::save::pokemon::pokemon_classes::parse_class;
+use crate::save::pokemon::pokemon_info::InfoStruct;
 use crate::save::pokemon::{correct_name, SelectedMon, StorageType};
 use crate::ui::render_texture;
 use crate::ui::screen::single_screen::logic::{

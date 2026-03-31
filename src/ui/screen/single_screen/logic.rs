@@ -12,8 +12,8 @@ use crate::save::pokemon::pokemon_info::{PokemonInfo, PokemonInfoMut};
 use crate::save::pokemon::shiny_list::{ShinyList, ShinyListMut};
 use crate::save::pokemon::StorageType;
 use crate::ui::screen::single_screen::{SingleMon, SingleScreen};
-use crate::ui::screen::{ScreenAction, ScreenTrait};
-use crate::{do_action, try_gvas_read, try_gvas_write};
+use crate::ui::screen::ScreenAction;
+use crate::{try_gvas_read, try_gvas_write};
 use eframe::emath::Vec2;
 use egui::{Button, ComboBox, Image, Response, Sense, TextEdit, Ui};
 use egui_extras::{Column, TableBuilder};
@@ -178,7 +178,7 @@ pub(super) fn render_gender_combo(data: &SingleMon, ui: &mut Ui) -> ScreenAction
 }
 
 pub(super) fn nickname_ui(data: &SingleMon, ui: &mut Ui) -> ScreenAction {
-    let mut action = ScreenAction::None;
+    let action = ScreenAction::None;
     ui.label("Nickname");
     let mut display: String = data.name.clone();
     let res: Response = ui.add(TextEdit::singleline(&mut display).desired_width(200.0));

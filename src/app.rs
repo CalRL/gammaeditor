@@ -17,7 +17,7 @@ use rfd::MessageLevel;
 use rust_embed::Embed;
 use std::fs::File;
 use std::io::{Cursor, Write};
-use std::sync::{Arc, Mutex, OnceLock, RwLock, RwLockReadGuard};
+use std::sync::{Arc, OnceLock, RwLock, RwLockReadGuard};
 
 pub static GVAS_FILE: OnceLock<Arc<RwLock<GvasFile>>> = OnceLock::<Arc<RwLock<GvasFile>>>::new();
 
