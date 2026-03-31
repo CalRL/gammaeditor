@@ -4,7 +4,7 @@ use crate::save::pokemon::pokemon_classes::{class_at, parse_class, PokemonClasse
 use crate::save::pokemon::shiny_list::get_shiny_list;
 use crate::save::pokemon::{SelectedMon, StorageType};
 use crate::ui::image::ImageContainer;
-use crate::ui::screen::single_screen::{SingleScreen, SingleScreenBuffer};
+use crate::ui::screen::single_screen::{SingleMon, SingleScreen, SingleScreenBuffer};
 use crate::ui::screen::{Screen, ScreenAction, ScreenTrait};
 use crate::ui::render_texture;
 use crate::unwrap_gvas;
@@ -96,40 +96,18 @@ impl ScreenTrait for PartyScreen {
                 }
 
                 for option in self.containers.iter() {
-                    let container: &ImageContainer = match option {
-                        None => continue,
-                        Some(p) => p,
+                    let op: Option<&ImageContainer> = option.as_ref();
+
+                    let Some(container) = op else {
+                        continue;
                     };
-                    if let Some(tex) = app.image_cache.get(ui.ctx(), container.path.as_str()) {
-                        let image: Image = render_texture(tex).sense(Sense::click());
-                        let res = ui.add(image);
 
-                        if res.clicked() {
-                            Logger::info_once(format!("{} Clicked!", container.parsed_class));
-
-                            let mon: SelectedMon = SelectedMon {
-                                storage_type: StorageType::PARTY,
-                                index: container.index,
-                            };
-                            set_data_persisted(ui.ctx(), "selected_mon".into(), mon.clone());
-
-                            app.selected_mon = Some(mon.clone());
-
-                            Logger::info_once("Set selected mon");
-                            action = ScreenAction::ChangeTo(Screen::Single(SingleScreen {
-                                loaded: false,
-                                mon_data: None,
-                                buf: SingleScreenBuffer::default(),
-                                gvas_file: None,
-                                needs_refresh: true,
-                            }))
+                    let new_action = create_image(app, ui, container);
+                    match new_action {
+                        ScreenAction::None => {}
+                        _ => {
+                            action = new_action;
                         }
-
-                        if res.hovered() {
-                            ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
-                        }
-                    } else {
-                        Logger::info(format!("No such image: {}", container.path.as_str()));
                     }
                 }
             });
@@ -137,6 +115,47 @@ impl ScreenTrait for PartyScreen {
 
         action
     }
+}
+
+fn create_image(app: &mut App, ui: &mut Ui, container: &ImageContainer) -> ScreenAction {
+    let Some(tex_handle) = app.image_cache.get(ui.ctx(), container.path.as_str()) else {
+        Logger::error(format!("No such image: {}", container.path.as_str()));
+        return ScreenAction::None;
+    };
+
+    let image: Image = render_texture(tex_handle).sense(Sense::click());
+    let res = ui.add(image);
+
+    if res.hovered() {
+        ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
+    }
+
+    if !res.clicked() {
+        return ScreenAction::None
+    }
+
+    Logger::info_once(format!("{} Clicked!", container.parsed_class));
+
+    let mon: SelectedMon = SelectedMon {
+        storage_type: StorageType::PARTY,
+        index: container.index,
+    };
+    set_data_persisted(ui.ctx(), "selected_mon".into(), mon.clone());
+
+    app.selected_mon = Some(mon.clone());
+
+    Logger::info_once("Set selected mon");
+    let single_screen: SingleScreen = SingleScreen {
+        loaded: false,
+        mon_data: None,
+        buf: SingleScreenBuffer::default(),
+        gvas_file: None,
+        needs_refresh: true,
+    };
+
+    ScreenAction::ChangeTo(
+        Screen::Single(single_screen)
+    )
 }
 
 pub fn get_names(gvas_file: &GvasFile) -> Option<Vec<String>> {

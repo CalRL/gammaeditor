@@ -1,7 +1,8 @@
 pub mod home_screen;
 pub mod party_screen;
-pub(crate) mod single_screen;
+pub mod single_screen;
 pub mod settings_screen;
+mod box_screen;
 
 use crate::app::App;
 use crate::logger::Logger;
